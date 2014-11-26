@@ -1774,6 +1774,7 @@ define(['./base','./renderOptions','./clef', './vfShow', './duration',
      * @returns {Array} [clickedDiatonicNoteNum, foundNote]
      */
     stream.Part.prototype.findNoteForClick = function(canvas, e) {
+    	console.log('findNoteforClick')
         var _ = this.getScaledXYforCanvas(canvas, e);
         var x = _[0];
         var y = _[1];
@@ -1792,9 +1793,12 @@ define(['./base','./renderOptions','./clef', './vfShow', './duration',
         var clickedDiatonicNoteNum = this.diatonicNoteNumFromScaledY(scaledYRelativeToSystem);
         
         var foundNote = this.noteElementFromScaledX(x, undefined, systemIndex);
-        return [clickedDiatonicNoteNum, foundNote];
+        
+       // return [clickedDiatonicNoteNum, foundNote];
+        
     };
 
+   
     /**
      * Override the noteElementFromScaledX for Stream
      * to take into account sub measures...
