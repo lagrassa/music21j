@@ -20,7 +20,7 @@
 				var amChord= new music21.chord.Chord(['A5', 'C5', 'E5']); 
 				var shortChord = new music21.chord.Chord(['A5', 'C5']);
 				var chordArray=[cChord, gChord, fChord, amChord, shortChord]
-				var mixedMeasure=new music21.stream.Measure();
+				mixedMeasure = new music21.stream.Measure();
 				mixedMeasure.append(amChord)
 				mixedMeasure.append(gChord)
 				mixedMeasure.append(fChord)
@@ -31,24 +31,17 @@
 				} */
 				
 				
-				 mixedMeasure.renderOptions.events['click'] = function (e) {
-		                // this = canvas...
-		                var _ = mixedMeasure.findNoteForClick(this, e);
-		                var dNN = _[0];
-		                var n = _[1];
-		                console.log(dNN);
-		                console.log(n);
-		                
-		            }
+				
+	            }
 				 
-				var $canvasDivScore = $('#canvasDivScore')
+				var $canvasDivScore = $('#canvasDivScore');
 				mixedMeasure.appendNewCanvas($canvasDivScore);
 				
 				$('#beginDemo').click(function () {
 					//separateByInstrument(mixedMeasure)
 				});
 				
-				 var playSound = true;
+				 var playSound = false;
 		                        
 			     $('#playSound').bind('click', function() {
 		                if (this.checked) {
@@ -62,13 +55,13 @@
 			
 		</script>
 		<div id = "canvasDivScore" ></div>
-		<h2> Seperated Lines</h2>
+		<h2> separated Lines</h2>
 		<div id='canvases' align='center'>
 		</div>
 		<div id='instrumentSelect'>
-		<input type="checkbox" name="instrument" value="instrument1">Instrument 1<br>
-		<input type="checkbox" name="instrument"  value="instrument2">Instrument 2<br>
-		<input type="checkbox" checked name="instrument"  value="instrument3">Instrument 3
+		<input type="checkbox" name="instrument" value="1">Instrument 1<br>
+		<input type="checkbox" name="instrument"  value="2">Instrument 2<br>
+		<input type="checkbox" checked name="instrument"  value="3">Instrument 3
 		</div>
 		<button type='button' id='beginDemo'> Split score </button>
 		<div id='canvases' class = 'canvas'></div>
