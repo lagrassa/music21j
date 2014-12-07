@@ -20,26 +20,18 @@
 				var amChord= new music21.chord.Chord(['A5', 'C5', 'E5']); 
 				var shortChord = new music21.chord.Chord(['A5', 'C5']);
 				var chordArray=[cChord, gChord, fChord, amChord, shortChord]
-				mixedMeasure = new music21.stream.Measure();
-				mixedMeasure.append(amChord)
-				mixedMeasure.append(gChord)
-				mixedMeasure.append(fChord)
+				mixedPart = new music21.stream.Measure();
+				mixedPart.append(amChord)
+				mixedPart.append(gChord)
+				mixedPart.append(fChord)
 				/* for (var z = 0; z < 4; z++) {
 					for (var i = 0; i<chordArray.length; i++){
-						mixedMeasure.append(chordArray[i]);
+						mixedPart.append(chordArray[i]);
 					}
 				} */
-				
-				
-				
-	            }
-				 
+				mixedPart.renderOptions.events['click'] = clickFunction.bind(mixedPart); 
 				var $canvasDivScore = $('#canvasDivScore');
-				mixedMeasure.appendNewCanvas($canvasDivScore);
-				
-				$('#beginDemo').click(function () {
-					//separateByInstrument(mixedMeasure)
-				});
+				mixedPart.appendNewCanvas($canvasDivScore);
 				
 				 var playSound = false;
 		                        
@@ -55,7 +47,7 @@
 			
 		</script>
 		<div id = "canvasDivScore" ></div>
-		<h2> separated Lines</h2>
+		<h2> Separated Lines</h2>
 		<div id='canvases' align='center'>
 		</div>
 		<div id='instrumentSelect'>
@@ -63,7 +55,7 @@
 		<input type="checkbox" name="instrument"  value="2">Instrument 2<br>
 		<input type="checkbox" checked name="instrument"  value="3">Instrument 3
 		</div>
-		<button type='button' id='beginDemo'> Split score </button>
+		<button type='button' id='createCanvases'> Create Staves </button>
 		<div id='canvases' class = 'canvas'></div>
 		<script src='protoPainting.js'> </script>
 		
