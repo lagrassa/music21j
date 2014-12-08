@@ -1,13 +1,22 @@
+function orchestralScore(name){
+	this.name = name
+	function splitPart (instrument, part) {
+		this.instrument = 'piano'
+		this.part = new music21.part.Part()
+	}
+}
+
+
 /**
  * Called by create canvases to determine which instruments were selected
- * @returns {Array} [instruments] returns a list of instrument identifiers that correspond to jQuery canvases
+ * @returns {Array} selected instruments returns a list of instrument identifiers that correspond to jQuery canvases
  */
-
 function getSelectedInstruments() {
 	var selectedInstruments = [];
 	$('#instrumentSelect :checked').each(function() {
 		selectedInstruments.push($(this).val());
 	    });
+	var totalInstruments = []
 	return selectedInstruments
 }
 
@@ -18,22 +27,22 @@ function getSelectedInstruments() {
 */
 
 $('#createCanvases').click(function () {
+	splitScores = new orchestralScore('protoPainting score')
 	createCanvases();
 });
 
 
 function createCanvases() {
-	$("#canvases").empty()
+	$("#canvases").empty();
 	var selectedInstruments=getSelectedInstruments();
-	partList = [];
-	for (var i = 0; i < selectedInstruments.length; i++) {
-		var partToAdd= new music21.stream.Part();
+	for (var i in selectedInstruments) {		
+		var p= new music21.stream.Part();
 		var newMeasure = new music21.stream.Measure();
-		partToAdd.append(newMeasure);
-		partList.push(partToAdd);
+		p.append(newMeasure);
 		$("#canvases").append("<div class = 'canvas' id='instrument' align = 'left' > </div>");
 		var $specifiedCanvas = $('.canvas:eq(' + i + ')');
-		partToAdd.appendNewCanvas($specifiedCanvas);
+		newPart = new orchestralScore.splitPart(i, p)
+		p.appendNewCanvas($specifiedCanvas);
 	}
 }
 /**
@@ -42,11 +51,10 @@ function createCanvases() {
  */
 function displayParts() {
 	var selectedInstruments=getSelectedInstruments();
-	for (var i = 0; i < selectedInstruments.length; i++) {
-		var canvasIndex = parseInt(selectedInstruments[i]);
-		var $specifiedCanvas = $('.canvas:eq(' + canvasIndex + ')');
+	for (i in selectedInstruments) {
+		var $specifiedCanvas = $('.canvas:eq(' + i + ')');
 		$specifiedCanvas.empty();
-		partList[i].appendNewCanvas($specifiedCanvas);
+		splitScores.partList[i].appendNewCanvas($specifiedCanvas);
 	}
 }
 
@@ -62,13 +70,11 @@ function getNoteFromChordAndDNN(_) {
 	selectedNote.pitch.diatonicNoteNum=dNN;
 	var oneNoteChord = new music21.chord.Chord();
 	oneNoteChord.add(selectedNote);
-	console.log(oneNoteChord);
 	return oneNoteChord;
 }
 
 
 var clickFunction = function (e) {
-	console.log('click event');
 	var canvasElement = e.currentTarget;
     var _ = this.findNoteForClick(canvasElement, e);
     var dNN = _[0];
@@ -94,9 +100,8 @@ var clickFunction = function (e) {
  */
 function assignNoteToParts(c, noteIndex) {
 	var selectedInstruments = getSelectedInstruments();
-	
-	for (var i = 0; i<selectedInstruments.length; i++) {
-		var partToAppendTo = partList[parseInt(selectedInstruments[i])]
+	for (instrument in selectedInstruments) {
+		partToAppendTo = splitScores.partIndices.instrument
 		partToAppendTo.flat.elements[noteIndex] = c
 	}
 }
