@@ -57,12 +57,13 @@ $('#createCanvases').click(function () {
 function createCanvases() {
 	$("#canvases").empty();
 	var selectedInstruments=getSelectedInstruments();
-	for (var i in selectedInstruments) {		
+	for (var i in selectedInstruments) {	
 		var p= new music21.stream.Part();
 		var newMeasure = new music21.stream.Measure();
 		p.append(newMeasure);
 		$("#canvases").append("<div class = 'canvas' id='instrument' align = 'left' > </div>");
 		var $specifiedCanvas = $('.canvas:eq(' + i + ')');
+		$specifiedCanvas.text(selectedInstruments[i])
 		try {
 			os.makeSplittedPart(i, p)
 		}
