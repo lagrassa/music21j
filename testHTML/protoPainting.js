@@ -1,17 +1,23 @@
 function orchestralScore(name){
 	this.name = name
-	this.partList = []
+	if (typeof partList == "undefined") {
+		this.partList = []
+		console.log('set partList to empty array')
+	}
 	//this.splitPart = splitPart(instrument, part)
-	getPart = function(selectedInstrument) {
-		for (splitPart in partList) {
+	this.getPart = function(selectedInstrument) {
+		for (splitPart in this.partList) {
 			if (splitPart.instrument == selectedInstrument) {
 				return splitPart.part
 			}
 		}
 	}
 	
-	makeSplittedPart = function (instrument, p) {
-		partList.append(this.splitPart)
+	this.makeSplittedPart = function (instrument, p) {
+		console.log('madeSplitPart')
+		var newSplitPart = new splitPart(instrument, p)
+		this.partList.push(newSplitPart)
+		console.log('appended splitPart')
 	}
 
 	function splitPart (instrument, p) {
@@ -49,7 +55,7 @@ function getSelectedInstruments() {
 */
 
 $('#createCanvases').click(function () {
-	splitScores = new orchestralScore('protoPainting score')
+		os= new orchestralScore('protoPainting score')
 	createCanvases();
 });
 
@@ -57,15 +63,16 @@ $('#createCanvases').click(function () {
 function createCanvases() {
 	$("#canvases").empty();
 	var selectedInstruments=getSelectedInstruments();
-	for (var i in selectedInstruments) {	
+	for (var i in selectedInstruments) {
+		instrumentName = selectedInstruments[i]
 		var p= new music21.stream.Part();
 		var newMeasure = new music21.stream.Measure();
 		p.append(newMeasure);
 		$("#canvases").append("<div class = 'canvas' id='instrument' align = 'left' > </div>");
 		var $specifiedCanvas = $('.canvas:eq(' + i + ')');
-		$specifiedCanvas.text(selectedInstruments[i])
+		$specifiedCanvas.text(instrumentName)
 		try {
-			os.makeSplittedPart(i, p)
+			os.makeSplittedPart(instrumentName, p)
 		}
 		catch (err){
 			os = new orchestralScore('protopainter orchestral score')
@@ -82,7 +89,7 @@ function displayParts() {
 	for (i in selectedInstruments) {
 		var $specifiedCanvas = $('.canvas:eq(' + i + ')');
 		$specifiedCanvas.empty();
-		splitScores.getPart(i).appendNewCanvas($specifiedCanvas);
+		os.getPart(i).appendNewCanvas($specifiedCanvas);
 	}
 }
 
@@ -131,7 +138,7 @@ var clickFunction = function (e) {
 function assignNoteToParts(c,  offsetIndex) {
 	var selectedInstruments = getSelectedInstruments();
 	for (instrument in selectedInstruments) {
-		partToAppendTo = splitScores.getPart(instrument)
+		partToAppendTo = os.getPart(instrument)
 		partToAppendTo.append(c);
 		c.offset=offsetIndex
 	}
