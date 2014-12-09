@@ -1,8 +1,30 @@
 function orchestralScore(name){
 	this.name = name
-	function splitPart (instrument, part) {
-		this.instrument = 'piano'
-		this.part = new music21.part.Part()
+	this.partList = []
+	//this.splitPart = splitPart(instrument, part)
+	getPart = function(selectedInstrument) {
+		for (splitPart in partList) {
+			if (splitPart.instrument == selectedInstrument) {
+				return splitPart.part
+			}
+		}
+	}
+	
+	makeSplittedPart = function (instrument, p) {
+		partList.append(this.splitPart)
+	}
+
+	function splitPart (instrument, p) {
+		if (undefined === instrument) {
+			this.instrument = 'piano';
+		} else {
+			this.instrument = instrument;
+		}
+		if (p  == "undefined") {
+			this.p = new music21.stream.Part();
+		} else {
+			this.p = p;
+		}
 	}
 }
 
@@ -41,7 +63,12 @@ function createCanvases() {
 		p.append(newMeasure);
 		$("#canvases").append("<div class = 'canvas' id='instrument' align = 'left' > </div>");
 		var $specifiedCanvas = $('.canvas:eq(' + i + ')');
-		newPart = new orchestralScore.splitPart(i, p)
+		try {
+			os.makeSplittedPart(i, p)
+		}
+		catch (err){
+			os = new orchestralScore('protopainter orchestral score')
+		}
 		p.appendNewCanvas($specifiedCanvas);
 	}
 }
@@ -54,7 +81,7 @@ function displayParts() {
 	for (i in selectedInstruments) {
 		var $specifiedCanvas = $('.canvas:eq(' + i + ')');
 		$specifiedCanvas.empty();
-		splitScores.partList[i].appendNewCanvas($specifiedCanvas);
+		splitScores.getPart(i).appendNewCanvas($specifiedCanvas);
 	}
 }
 
@@ -69,6 +96,7 @@ function getNoteFromChordAndDNN(_) {
 	var selectedNote = new music21.note.Note();
 	selectedNote.pitch.diatonicNoteNum=dNN;
 	var oneNoteChord = new music21.chord.Chord();
+	selectedNote.offset = c.offset
 	oneNoteChord.add(selectedNote);
 	return oneNoteChord;
 }
@@ -86,7 +114,8 @@ var clickFunction = function (e) {
     	}
     }
 	var oneNoteChord=getNoteFromChordAndDNN(_)
-	assignNoteToParts(oneNoteChord, noteIndex)
+	offsetIndex = oneNoteChord.offset
+	assignNoteToParts(oneNoteChord, offsetIndex)
 	displayParts()
 };
 
@@ -98,11 +127,12 @@ var clickFunction = function (e) {
  * Adds the note to all of the selected parts. Consider 
  * finding a way to do this without using global variables...
  */
-function assignNoteToParts(c, noteIndex) {
+function assignNoteToParts(c,  offsetIndex) {
 	var selectedInstruments = getSelectedInstruments();
 	for (instrument in selectedInstruments) {
-		partToAppendTo = splitScores.partIndices.instrument
-		partToAppendTo.flat.elements[noteIndex] = c
+		partToAppendTo = splitScores.getPart(instrument)
+		partToAppendTo.append(c);
+		c.offset=offsetIndex
 	}
 }
 

@@ -21,21 +21,23 @@
 				var shortChord = new music21.chord.Chord(['A5', 'C5']);
 				var chordArray=[cChord, gChord, fChord, amChord, shortChord]
 				var mixedMeasure=new music21.stream.Measure();
+				mixedPart = new music21.stream.Part();
 				for (var i = 0; i<chordArray.length; i++){
 					mixedMeasure.append(chordArray[i]);
 				}
+				
 				for (var z = 0; z < 4; z++) {
 					for (var i = 0; i<chordArray.length; i++){
 						mixedMeasure.append(chordArray[i]);
 					}
 				}
-				
+				mixedPart.append(mixedMeasure);
 				
 				var $canvasDivScore = $('#canvasDivScore')
-				mixedMeasure.appendNewCanvas($canvasDivScore);
+				mixedPart.appendNewCanvas($canvasDivScore);
 				
 				$('#beginDemo').click(function () {
-					separateByInstrument(mixedMeasure)
+					separateByInstrument(mixedPart)
 				});
 				
 				 var playSound = true;

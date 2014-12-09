@@ -1,4 +1,65 @@
+function setupScribe() {
+	t = new music21.stream.Measure();
+    b = new music21.stream.Measure();
+    tPart = new music21.stream.Part();
+    bPart = new music21.stream.Part();
+    tPart.append(t);
+    bPart.append(b);
+    sc= new music21.stream.Score();
+    sc.insert(0, tPart);
+    sc.insert(0, bPart);
+    t.clef = new music21.clef.TrebleClef();
+    b.clef = new music21.clef.BassClef();
 
+    t.renderOptions.scaleFactor = {x: 1.5, y: 1.5};
+    b.renderOptions.scaleFactor = {x: 1.5, y: 1.5};
+    metro = new music21.tempo.Metronome();
+    // metro.addDiv($("#metronomeDiv"));
+    
+    music21.miditools.metronome = metro;
+    k = new music21.keyboard.Keyboard();
+    k.showNames = true;
+    
+    k.scaleFactor = 2.0;
+    k.startPitch = 22;
+    k.endPitch = k.startPitch + 14;
+    k.scrollable = true;
+    k.hideable = true;
+    
+    var $kd = $('#keyboardDiv');
+    k.appendKeyboard($kd); // 25key keyboard
+    
+    var playSound = true;
+                
+    var midiCallbacksPlay = [music21.miditools.makeChords, 
+                             music21.miditools.sendToMIDIjs,
+                             music21.keyboard.jazzHighlight.bind(k)];
+    
+    var midiCallbacksNoPlay = [music21.miditools.makeChords, 
+                               music21.keyboard.jazzHighlight.bind(k)];
+    
+    lastRestStream = t;
+    lastNoteStream = b;
+
+    var Jazz = music21.jazzMidi.createPlugin();
+    music21.jazzMidi.createSelector($("#putMidiSelectHere"), Jazz);
+    music21.jazzMidi.callBacks.general = [music21.miditools.makeChords, 
+                                          music21.miditools.sendToMIDIjs,
+                                          music21.keyboard.jazzHighlight.bind(k)];
+    music21.jazzMidi.callBacks.sendOutChord = appendElement;
+    
+    $('#markC').bind('click', function () { k.markC = this.checked; k.redrawSVG() })
+    $('#showNames').bind('click', function () { k.showNames = this.checked; k.redrawSVG() })
+    $('#showOctaves').bind('click', function () { k.showOctaves = this.checked; k.redrawSVG() })
+
+    $('#playSound').bind('click', function() {
+        if (this.checked) {
+            music21.jazzMidi.callBacks.general = midiCallbacksPlay;
+        } else {
+            music21.jazzMidi.callBacks.general = midiCallbacksNoPlay;
+        }
+    });
+}
 /**
  * Finds value of radio buttons for selected staves
  * 
@@ -15,35 +76,35 @@ var useOneStaffAlways = false;
 function hideStaff(){
 	//hides the canvas that isn't selected
 	var $checked = $('#staffSelect').find('input[type="radio"]:checked').val();
-		console.log($checked);
-		if ($checked == 'bassOnly') {
-			$('#canvasDivTreble').hide();
-			$('#canvasDivBass').show();
-			console.log('treble hidden')
-		}
-		else if ($checked == 'trebleOnly') {
-			$('#canvasDivTreble').show();
-			$('#canvasDivBass').hide();
+	console.log($checked);
+	if ($checked == 'bassOnly') {
+		$('#canvasDivTreble').hide();
+		$('#canvasDivBass').show();
+		console.log('treble hidden')
+	}
+	else if ($checked == 'trebleOnly') {
+		$('#canvasDivTreble').show();
+		$('#canvasDivBass').hide();
 		console.log('bass hidden')	
-		}
-		if (useOneStaffAlways !== false) {
-			return;
-		}
-		//other case hides the rest stream
-		else if ( lastNoteStream != t && t.get(-1).isRest == true) {
-			$('#canvasDivBass').show();
-			$('#canvasDivTreble').hide();
-			console.log('hid treble because it was a rest stream')
-		}
-		else if (lastNoteStream != b && b.get(-1).isRest == true ) {
-			$('#canvasDivTreble').show();
-			$('#canvasDivBass').hide();
-			console.log('hid bass because it was a rest stream')
-		} else { 
-			$('#canvasDivTreble').show();
-			$('#canvasDivBass').show();
-			console.log('Recognized that I should show both')
-		}
+	}
+	if (useOneStaffAlways !== false) {
+		return;
+	}
+	//other case hides the rest stream
+	else if ( lastNoteStream != t && t.get(-1).isRest == true) {
+		$('#canvasDivBass').show();
+		$('#canvasDivTreble').hide();
+		console.log('hid treble because it was a rest stream')
+	}
+	else if (lastNoteStream != b && b.get(-1).isRest == true ) {
+		$('#canvasDivTreble').show();
+		$('#canvasDivBass').hide();
+		console.log('hid bass because it was a rest stream')
+	} else { 
+		$('#canvasDivTreble').show();
+		$('#canvasDivBass').show();
+		console.log('Recognized that I should show both')
+	}
 		
 }
 
@@ -90,19 +151,24 @@ function appendElement(appendObject) {
 		return;
 	}
 	appendChordToScore(appendChord, streamLength);
-	if (t.length > 0 && miditools.lastElement != undefined ) {
-		t.get(-1).duration = miditools.lastElement.duration;
+	if (t.length > 0 && music21.miditools.lastElement != undefined ) {
+		t.get(-1).duration = music21.miditools.lastElement.duration;
 	}
-	if (b.length > 0 && miditools.lastElement != undefined) {
-		b.get(-1).duration = miditools.lastElement.duration;
+	if (b.length > 0 && music21.miditools.lastElement != undefined) {
+		b.get(-1).duration = music21.miditools.lastElement.duration;
 	}
+	
 	if 	($('#separatedValue').text() == 0) {
 	    var $canvasDivScore = $("#canvasDivScore");    
 	    $canvasDivScore.empty();        
 		sc.appendNewCanvas($canvasDivScore);
-		
-		
+	
 	} else if ( $('#separatedValue').text() == 1) {
+		// create if statements depending on [00] [10] etc and append only correct part
+		var $canvasDivEither = $("#canvasDivEither");
+		$canvasDivEither.empty();
+		sc.appendNewCanvas($canvasDivEither);
+		
 		var $canvasDivTreble=$("#canvasDivTreble");
 		$canvasDivTreble.empty();
 		t.appendNewCanvas($canvasDivTreble);
@@ -110,8 +176,7 @@ function appendElement(appendObject) {
 		var $canvasDivBass=$("#canvasDivBass");
 		$canvasDivBass.empty();
 		b.appendNewCanvas($canvasDivBass);
-		console.log(lastRestStream.clef)
-		console.log(lastNoteStream.clef)
+
 		hideStaff();
 		
 	} else {
@@ -154,11 +219,18 @@ function appendChordsToStreams(s, chordToAppend, newRest, streamLength) {
 }
 
 /**
+ * Takes a chord and creates two chords in separate staves
  * 
  * @param rawChord Chord
  * @returns {Array<music21.chord.Chord>} Two element array: [0] Treble; [1] Bass
  */
-function separateChord(rawChord) {
+function separateChord(rawChord, options) {
+	var params = {
+			maxSpread: 6, //max spread of diatonic note numbers in a single chord
+			splitPoint: 29, //middle C
+			};
+	music21.common.merge(params, options);
+	
 	var selectedStaves = getSelectedStaff();
 	var trebleOnly = selectedStaves[0];
 	var bassOnly = selectedStaves[1];
@@ -167,14 +239,28 @@ function separateChord(rawChord) {
 	var treblePartOfChord = new music21.chord.Chord();
 	var bassPartOfChord = new music21.chord.Chord();
 	
-	while ( i < rawChord.pitches.length) {
+	var topdNN = rawChord.pitches[rawChord.pitches.length-1].diatonicNoteNum
+	var bottomdNN = rawChord.pitches[0].diatonicNoteNum
+
+	var maxSpread = params.maxSpread;
+	var splitPoint = params.splitPoint;
+	
+	if (topdNN - bottomdNN < maxSpread ) {
+		var midpoint = ( (topdNN + bottomdNN ) / 2.0)
+		if (midpoint >= splitPoint) {
+			trebleOnly = true
+		} else if (midpoint < splitPoint) {
+			bassOnly = true
+		}
+	} 
+	
+	while ( i < rawChord.pitches.length) {	
 		var noteInChord = new music21.note.Note();
 		noteInChord.pitch = rawChord.pitches[i];
 		noteInChord.duration = rawChord.duration;
 	
 		if ((noteInChord.pitch.octave >= 4 && bassOnly == false) || trebleOnly == true) {
-			treblePartOfChord.add(noteInChord);
-		
+			treblePartOfChord.add(noteInChord);		
 		} else if ((noteInChord.pitch.octave < 4 && trebleOnly == false) || bassOnly == true) {
 			bassPartOfChord.add(noteInChord);
 		}
