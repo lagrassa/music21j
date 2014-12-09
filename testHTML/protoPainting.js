@@ -6,9 +6,12 @@ function orchestralScore(name){
 	}
 	//this.splitPart = splitPart(instrument, part)
 	this.getPart = function(selectedInstrument) {
-		for (splitPart in this.partList) {
+		for (var i =0; i < this.partList.length; i++ ) {
+			var splitPart = this.partList[i]
 			if (splitPart.instrument == selectedInstrument) {
-				return splitPart.part
+				console.log('found part')
+				console.log(splitPart)
+				return splitPart.p
 			}
 		}
 	}
