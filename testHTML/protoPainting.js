@@ -2,27 +2,21 @@ function orchestralScore(name){
 	this.name = name
 	if (typeof partList == "undefined") {
 		this.partList = []
-		console.log('set partList to empty array')
 	}
 	//this.splitPart = splitPart(instrument, part)
-	this.getPart = function(selectedInstrument) {
+	this.getSplitPart = function(selectedInstrument) {
 		for (var i =0; i < this.partList.length; i++ ) {
 			var splitPart = this.partList[i]
 			if (splitPart.instrument == selectedInstrument) {
-				console.log('found part')
-				console.log(splitPart)
-				return splitPart.p
+				return splitPart
 			}
 		}
 	}
 	
 	this.makeSplittedPart = function (instrument, p) {
-		console.log('madeSplitPart')
 		var newSplitPart = new splitPart(instrument, p)
 		this.partList.push(newSplitPart)
-		console.log('appended splitPart')
 	}
-
 	function splitPart (instrument, p) {
 		if (undefined === instrument) {
 			this.instrument = 'piano';
@@ -31,9 +25,17 @@ function orchestralScore(name){
 		}
 		if (p  == "undefined") {
 			this.p = new music21.stream.Part();
+			var m = new music21.stream.Measure()
+			p.append(m);
 		} else {
 			this.p = p;
 		}
+		
+		this.addNoteToPart = function (c, offsetIndex) {	
+			c.offset = offsetIndex
+			this.p.append(c);
+		}
+		
 	}
 }
 
@@ -89,10 +91,11 @@ function createCanvases() {
  */
 function displayParts() {
 	var selectedInstruments=getSelectedInstruments();
-	for (i in selectedInstruments) {
-		var $specifiedCanvas = $('.canvas:eq(' + i + ')');
+	for (var i = 0; i < selectedInstruments.length; i++) {
+		instrumentName = selectedInstruments[i];
+		var $specifiedCanvas = $('.canvas:eq(' + instrumentName + ')');
 		$specifiedCanvas.empty();
-		os.getPart(i).appendNewCanvas($specifiedCanvas);
+		os.getSplitPart(instrumentName).p.appendNewCanvas($specifiedCanvas);
 	}
 }
 
@@ -131,19 +134,20 @@ var clickFunction = function (e) {
 };
 
 
-
+function assignNoteToParts(c,  offsetIndex) {
+	var selectedInstruments = getSelectedInstruments();
+	for (var i = 0; i < selectedInstruments.length; i++) {
+		var instrument = selectedInstruments[i];
+		partToAppendTo = os.getSplitPart(instrument);
+		partToAppendTo.addNoteToPart(c, offsetIndex);
+		
+	}
+}
 /*
  * @params chord.Chord one note chord to be added
  * 
  * Adds the note to all of the selected parts. Consider 
  * finding a way to do this without using global variables...
  */
-function assignNoteToParts(c,  offsetIndex) {
-	var selectedInstruments = getSelectedInstruments();
-	for (instrument in selectedInstruments) {
-		partToAppendTo = os.getPart(instrument)
-		partToAppendTo.append(c);
-		c.offset=offsetIndex
-	}
-}
+
 
