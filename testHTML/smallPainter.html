@@ -19,18 +19,18 @@
 				var amChord= new music21.chord.Chord(['A5', 'C5', 'E5']); 
 				var shortChord = new music21.chord.Chord(['A5', 'C5']);
 				var chordArray=[cChord, gChord, fChord, amChord, shortChord]
-				mixedPart = new music21.stream.Measure();
-				mixedPart.append(amChord)
-				mixedPart.append(gChord)
-				mixedPart.append(fChord)
+				mixedMeasure = new music21.stream.Measure();
+				mixedMeasure.append(amChord)
+				mixedMeasure.append(gChord)
+				mixedMeasure.append(fChord)
 				/* for (var z = 0; z < 4; z++) {
 					for (var i = 0; i<chordArray.length; i++){
-						mixedPart.append(chordArray[i]);
+						mixedMeasure.append(chordArray[i]);
 					}
 				} */
-				mixedPart.renderOptions.events['click'] = clickFunction.bind(mixedPart); 
+				mixedMeasure.renderOptions.events['click'] = clickFunction.bind(mixedMeasure); 
 				var $canvasDivScore = $('#canvasDivScore');
-				mixedPart.appendNewCanvas($canvasDivScore);
+				mixedMeasure.appendNewCanvas($canvasDivScore);
 				
 				 var playSound = false;
 		                        

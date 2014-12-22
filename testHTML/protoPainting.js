@@ -1,11 +1,11 @@
-function orchestralScore(name){
+function OrchestralScore(name){
 	this.name = name
-	if (typeof partList == "undefined") {
+	if (typeof this.partList == "undefined") {
 		this.partList = []
 	}
-	//this.splitPart = splitPart(instrument, part)
+	//this.splitPart = SplitPart(instrument, part)
 	this.getSplitPart = function(selectedInstrument) {
-		for (var i =0; i < this.partList.length; i++ ) {
+		for (var i = 0; i < this.partList.length; i++ ) {
 			var splitPart = this.partList[i]
 			if (splitPart.instrument == selectedInstrument) {
 				return splitPart
@@ -14,31 +14,29 @@ function orchestralScore(name){
 	}
 	
 	this.makeSplittedPart = function (instrument, p) {
-		var newSplitPart = new splitPart(instrument, p)
+		var newSplitPart = new SplitPart(instrument, p)
 		this.partList.push(newSplitPart)
-	}
-	function splitPart (instrument, p) {
-		if (undefined === instrument) {
-			this.instrument = 'piano';
-		} else {
-			this.instrument = instrument;
-		}
-		if (p  == "undefined") {
-			this.p = new music21.stream.Part();
-			var m = new music21.stream.Measure()
-			p.append(m);
-		} else {
-			this.p = p;
-		}
-		
-		this.addNoteToPart = function (c, offsetIndex) {	
-			c.offset = offsetIndex
-			this.p.append(c);
-		}
-		
 	}
 }
 
+function SplitPart (instrument, p) {
+	if (instrument === undefined) {
+		instrument = 'piano';
+	} 
+	if (p  === undefined) {
+		p = new music21.stream.Part();
+		var m = new music21.stream.Measure()
+		p.append(m);
+	} 
+	
+	this.instrument = instrument;
+	this.p = p;
+	
+	this.addNoteToPart = function (c, offsetIndex) {	
+		c.offset = offsetIndex
+		this.p.get(0).append(c);
+	}	
+}
 
 /**
  * Called by create canvases to determine which instruments were selected
@@ -60,29 +58,29 @@ function getSelectedInstruments() {
 */
 
 $('#createCanvases').click(function () {
-		os= new orchestralScore('protoPainting score')
+	os= new OrchestralScore('protoPainting score')
 	createCanvases();
 });
 
 
 function createCanvases() {
 	$("#canvases").empty();
-	var selectedInstruments=getSelectedInstruments();
+	var selectedInstruments = getSelectedInstruments();
 	for (var i in selectedInstruments) {
 		instrumentName = selectedInstruments[i]
-		var p= new music21.stream.Part();
+		var p = new music21.stream.Part();
 		var newMeasure = new music21.stream.Measure();
 		p.append(newMeasure);
-		$("#canvases").append("<div class = 'canvas' id='instrument' align = 'left' > </div>");
-		var $specifiedCanvas = $('.canvas:eq(' + i + ')');
-		$specifiedCanvas.text(instrumentName)
-		try {
-			os.makeSplittedPart(instrumentName, p)
+		var $canvasDiv = $("<div class = 'canvasHolder' id='instrument_" + instrumentName + "' align = 'left' > </div>");
+		$("#canvases").append($canvasDiv);
+		$canvasDiv.html("<b>" + instrumentName + "</b>")
+		
+		if (typeof(os) == "undefined") {
+			os = new OrchestralScore('protopainter orchestral score')
 		}
-		catch (err){
-			os = new orchestralScore('protopainter orchestral score')
-		}
-		p.appendNewCanvas($specifiedCanvas);
+		
+		os.makeSplittedPart(instrumentName, p) 
+		p.appendNewCanvas($canvasDiv);
 	}
 }
 /**
@@ -93,9 +91,11 @@ function displayParts() {
 	var selectedInstruments=getSelectedInstruments();
 	for (var i = 0; i < selectedInstruments.length; i++) {
 		instrumentName = selectedInstruments[i];
-		var $specifiedCanvas = $('.canvas:eq(' + instrumentName + ')');
+		var $specifiedCanvas = $('#instrument_'  + instrumentName);
 		$specifiedCanvas.empty();
-		os.getSplitPart(instrumentName).p.appendNewCanvas($specifiedCanvas);
+		var splittedPart = os.getSplitPart(instrumentName);
+		var thisPart = splittedPart.p;
+		thisPart.appendNewCanvas($specifiedCanvas);
 	}
 }
 
@@ -105,13 +105,30 @@ function displayParts() {
  * @returns {chord.Chord} chord made from the selected note and chord
  */
 function getNoteFromChordAndDNN(_) {
-	c=_[0];
-	dNN=_[1];
+	dNN = _[0];
+	c = _[1];
+	console.log(c);
+	console.log(dNN);
+	var minNoteDistance = 100; //some big number
+	for (var i = 0; i< c.pitches.length; i++) {
+		chordDNN= c.pitches[i].diatonicNoteNum
+		noteDistance = chordDNN-dNN;
+		if (noteDistance < 0) {
+			noteDistance = -1*noteDistance
+		}
+		
+		if (noteDistance < minNoteDistance  ) {
+			minNoteDistance = noteDistance;
+			correctdNN=c.pitches[i].diatonicNoteNum;
+		}
+	}
+	
 	var selectedNote = new music21.note.Note();
-	selectedNote.pitch.diatonicNoteNum=dNN;
+	selectedNote.pitch.diatonicNoteNum=correctdNN;
 	var oneNoteChord = new music21.chord.Chord();
 	selectedNote.offset = c.offset
 	oneNoteChord.add(selectedNote);
+	console.log(oneNoteChord.pitches[0].name);
 	return oneNoteChord;
 }
 
