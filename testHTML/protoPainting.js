@@ -14,6 +14,34 @@ function OrchestralScore(name){
 		}
 	}
 	
+	/**
+	 * Called by create canvases to determine which instruments were selected
+	 * @returns {Array} selected instruments returns a list of instrument identifiers that correspond to jQuery canvases
+	 */
+	this.getSelectedInstruments = function() {
+		var selectedInstruments = [];
+		$('#instrumentSelect :checked').each(function() {
+			selectedInstruments.push($(this).val());
+		    });
+		return selectedInstruments
+	}
+	
+	this.getRestingInstruments = function () {
+		var unchecked = [];
+		$('#instrumentSelect :not(:checked)').each(function() {
+			unchecked.push($(this).val());
+		    });
+		var resting = [];
+		for (var i = 0; i < unchecked.length; i++) {
+			if (typeof (os.getSplitPart(unchecked[i])) != "undefined") {
+					if (unchecked[i] != "") {
+						resting.push(unchecked[i])
+					}
+			}
+		}
+		return resting
+	}
+	
 	this.addRests = function (newSplitPart) {
 			
 			for (var splitPartWithRests = 0; splitPartWithRests < this.partList[0].p.flat.elements.length; splitPartWithRests++ ) {
@@ -30,7 +58,6 @@ function OrchestralScore(name){
 		if (typeof this.partList != "undefined") {
 			if (this.partList.length > 0 ) {
 				splitPartWithRests = this.addRests(newSplitPart)
-				console.log("Added rests");
 			}
 		}
 		this.partList.push(newSplitPart)
@@ -56,22 +83,19 @@ function SplitPart (instrument, p) {
 		c.offset = offsetIndex
 		this.p.get(0).append(c);
 	}
+	this.addCorrespondingRest = function (c, offsetIndex) {
+		console.log("add Corresponding rest")
+		r = new music21.note.Rest()
+		r.offset = offsetIndex
+		r.duration.quarterLength = c.duration.quarterLength
+		this.p.get(0).append(r);
+	}
 	
 	
 }
 
-/**
- * Called by create canvases to determine which instruments were selected
- * @returns {Array} selected instruments returns a list of instrument identifiers that correspond to jQuery canvases
- */
-function getSelectedInstruments() {
-	var selectedInstruments = [];
-	$('#instrumentSelect :checked').each(function() {
-		selectedInstruments.push($(this).val());
-	    });
-	var totalInstruments = []
-	return selectedInstruments
-}
+
+
 
 /**
 *Creates the correct number of canvases with appropriate identifiers. 
@@ -89,7 +113,12 @@ $('#createCanvases').click(function () {
 
 function createCanvases() {
 	$("#canvases").empty();
-	var selectedInstruments = getSelectedInstruments();
+	
+	if (typeof(os) == "undefined") {
+		os = new OrchestralScore('protopainter orchestral score')
+		console.log("created new os object")
+	}
+	var selectedInstruments = os.getSelectedInstruments();
 	for (var i in selectedInstruments) {
 		instrumentName = selectedInstruments[i]
 		var p = new music21.stream.Part();
@@ -101,10 +130,7 @@ function createCanvases() {
 		
 		
 		
-		if (typeof(os) == "undefined") {
-			os = new OrchestralScore('protopainter orchestral score')
-			console.log("created new os object")
-		}
+		
 		//Checks to see if splitPart with that name already exists and makes one if not
 		
 		if (typeof (os.getSplitPart(instrumentName))=="undefined" ) {
@@ -165,7 +191,7 @@ var clickFunction = function (e) {
     var _ = this.findNoteForClick(canvasElement, e);
     var dNN = _[0];
     var c = _[1];
-    var noteIndex = undefined
+    var noteIndex = undefined;
     for (var i = 0; i < this.flat.elements.length; i++ ){
     	if ( c === this.flat.elements[i] ) {
     		noteIndex = i
@@ -179,13 +205,23 @@ var clickFunction = function (e) {
 
 
 function assignNoteToParts(c,  offsetIndex) {
-	var selectedInstruments = getSelectedInstruments();
+	var selectedInstruments = os.getSelectedInstruments();
 	for (var i = 0; i < selectedInstruments.length; i++) {
 		var instrument = selectedInstruments[i];
 		partToAppendTo = os.getSplitPart(instrument);
 		partToAppendTo.addNoteToPart(c, offsetIndex);
 		
 	}
+	var otherInstruments = os.getRestingInstruments();
+	if (otherInstruments.length > 0 ) {
+		for (var j = 0; j < otherInstruments.length; j++) {
+			var instrument = otherInstruments[j];
+			partToAppendTo = os.getSplitPart(instrument);
+			partToAppendTo.addCorrespondingRest(c, offsetIndex);
+			
+		}
+	}
+	
 }
 /*
  * @params chord.Chord one note chord to be added
