@@ -1,6 +1,7 @@
 function OrchestralScore(name){
 	this.name = name
 	if (typeof this.partList == "undefined") {
+		console.log("initialize partList as undefined")
 		this.partList = []
 	}
 	//this.splitPart = SplitPart(instrument, part)
@@ -13,9 +14,28 @@ function OrchestralScore(name){
 		}
 	}
 	
+	this.addRests = function (newSplitPart) {
+			
+			for (var splitPartWithRests = 0; splitPartWithRests < this.partList[0].p.flat.elements.length; splitPartWithRests++ ) {
+				r = new music21.note.Rest()
+				r.duration
+				newSplitPart.p.append(r);
+				return splitPartWithRests;
+				}
+	}
+	
 	this.makeSplittedPart = function (instrument, p) {
 		var newSplitPart = new SplitPart(instrument, p)
+		console.log(instrument);
+		if (typeof this.partList != "undefined") {
+			if (this.partList.length > 0 ) {
+				splitPartWithRests = this.addRests(newSplitPart)
+				console.log("Added rests");
+			}
+		}
 		this.partList.push(newSplitPart)
+		
+		
 	}
 }
 
@@ -35,7 +55,9 @@ function SplitPart (instrument, p) {
 	this.addNoteToPart = function (c, offsetIndex) {	
 		c.offset = offsetIndex
 		this.p.get(0).append(c);
-	}	
+	}
+	
+	
 }
 
 /**
@@ -58,7 +80,9 @@ function getSelectedInstruments() {
 */
 
 $('#createCanvases').click(function () {
-	os= new OrchestralScore('protoPainting score')
+	if (typeof(os) == "undefined" ) {
+		os = new OrchestralScore('protoPainting score')
+	}
 	createCanvases();
 });
 
@@ -75,11 +99,18 @@ function createCanvases() {
 		$("#canvases").append($canvasDiv);
 		$canvasDiv.html("<b>" + instrumentName + "</b>")
 		
+		
+		
 		if (typeof(os) == "undefined") {
 			os = new OrchestralScore('protopainter orchestral score')
+			console.log("created new os object")
 		}
+		//Checks to see if splitPart with that name already exists and makes one if not
 		
-		os.makeSplittedPart(instrumentName, p) 
+		if (typeof (os.getSplitPart(instrumentName))=="undefined" ) {
+			os.makeSplittedPart(instrumentName, p);
+		}
+
 		p.appendNewCanvas($canvasDiv);
 	}
 }
@@ -88,13 +119,11 @@ function createCanvases() {
  * 
  */
 function displayParts() {
-	var selectedInstruments=getSelectedInstruments();
-	for (var i = 0; i < selectedInstruments.length; i++) {
-		instrumentName = selectedInstruments[i];
-		var $specifiedCanvas = $('#instrument_'  + instrumentName);
+	for (var sp = 0; sp < os.partList.length; sp++) {
+		splitPart = os.partList[sp];
+		var $specifiedCanvas = $('#instrument_'  + splitPart.instrument);
 		$specifiedCanvas.empty();
-		var splittedPart = os.getSplitPart(instrumentName);
-		var thisPart = splittedPart.p;
+		var thisPart = splitPart.p;
 		thisPart.appendNewCanvas($specifiedCanvas);
 	}
 }
@@ -107,8 +136,6 @@ function displayParts() {
 function getNoteFromChordAndDNN(_) {
 	dNN = _[0];
 	c = _[1];
-	console.log(c);
-	console.log(dNN);
 	var minNoteDistance = 100; //some big number
 	for (var i = 0; i< c.pitches.length; i++) {
 		chordDNN= c.pitches[i].diatonicNoteNum
