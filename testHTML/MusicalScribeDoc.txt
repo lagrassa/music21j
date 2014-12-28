@@ -1,0 +1,15 @@
+Documentation for musical scribe
+
+Each instrument gets a textbox where you fill in the locations of each note. To indicate that the note should be placed, write "1-3." To indicate that the note should be held, write "h." If you want a rest there, write "r." As of now, you submit the line when you're ready. In the future, this should update every time a note is added. In the more distant future, the note should change color to reflect that it has been assigned a note.
+
+Then, the scribe scans each line. The results of the line are independent of each other (for the most part). It calls "assignNoteToPart" if the input is "p." It calls "lengthenNote" if the input is "h." It calls something similar to addCorrespondingRest if "r" is the input. Then it does this for every line.
+
+The beauty of this implementation is going back to fix something just means fixing the line and rerendering the score.
+
+Steps for implementation
+1. make textbox for each staff in HTML along with the text
+2. find out how to scan textboxes
+3. write a function that scans the chord and adds the appropriate note
+4. write a function that scans the note and adds a rest
+5. write  a function that holds a note
+6. rewrite display parts to occur when a button is clicked 
