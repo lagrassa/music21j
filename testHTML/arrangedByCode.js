@@ -126,11 +126,14 @@ function createCanvases() {
 		
 		var $canvasDiv = $("<div class = 'canvasHolder' id='instrument_" + instrumentName + "' align = 'left' > </div>");
 		
+		var $inputBox = $('<label>Input for '+ instrumentName + ' : </label>' +
+	      '<input type="text" name="textbox' + instrumentName + 
+	      '" id="input_for_' + instrumentName + '" value="" >')
 		
-		$canvasDiv.after().html('<label>Input for '+ instrumentName + ' : </label>' +
-			      '<input type="text" name="textbox' + instrumentName + 
-			      '" id="input_for_' + instrumentName + '" value="" >');
-		 
+		var $button = $('<button> Render </button>')
+	      
+		$inputBox.after().html($button)
+		$canvasDiv.append($inputBox)
 		$("#canvases").append($canvasDiv);
 		p.appendNewCanvas($canvasDiv);
 	}
