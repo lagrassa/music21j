@@ -1,23 +1,10 @@
-function OrchestralScore(name){
-	this.name = name
+function OrchestralScore(pianoPart){
+	this.pianoScore = pianoPart
 	if (typeof this.partList == "undefined") {
 		console.log("initialize partList as undefined")
 		this.partList = []
 	}
-	//this.splitPart = SplitPart(instrument, part)
-	this.getSplitPart = function(selectedInstrument) {
-		for (var i = 0; i < this.partList.length; i++ ) {
-			var splitPart = this.partList[i]
-			if (splitPart.instrument == selectedInstrument) {
-				return splitPart
-			}
-		}
-	}
 	
-	/**
-	 * Called by create canvases to determine which instruments were selected
-	 * @returns {Array} selected instruments returns a list of instrument identifiers that correspond to jQuery canvases
-	 */
 	this.getSelectedInstruments = function() {
 		var selectedInstruments = [];
 		$('#instrumentSelect :checked').each(function() {
@@ -25,48 +12,9 @@ function OrchestralScore(name){
 		    });
 		return selectedInstruments
 	}
-	
-	this.getRestingInstruments = function () {
-		var unchecked = [];
-		$('#instrumentSelect :not(:checked)').each(function() {
-			unchecked.push($(this).val());
-		    });
-		var resting = [];
-		for (var i = 0; i < unchecked.length; i++) {
-			if (typeof (os.getSplitPart(unchecked[i])) != "undefined") {
-					if (unchecked[i] != "") {
-						resting.push(unchecked[i])
-					}
-			}
-		}
-		return resting
-	}
-	
-	this.addRests = function (newSplitPart) {
-			
-			for (var splitPartWithRests = 0; splitPartWithRests < this.partList[0].p.flat.elements.length; splitPartWithRests++ ) {
-				r = new music21.note.Rest()
-				r.duration
-				newSplitPart.p.append(r);
-				return splitPartWithRests;
-				}
-	}
-	
-	this.makeSplittedPart = function (instrument, p) {
-		var newSplitPart = new SplitPart(instrument, p)
-		console.log(instrument);
-		if (typeof this.partList != "undefined") {
-			if (this.partList.length > 0 ) {
-				splitPartWithRests = this.addRests(newSplitPart)
-			}
-		}
-		this.partList.push(newSplitPart)
-		
-		
-	}
 }
 
-function SplitPart (instrument, p) {
+function SplitPart (instrument, p, OrchestralScore) {
 	if (instrument === undefined) {
 		instrument = 'piano';
 	} 
@@ -79,18 +27,31 @@ function SplitPart (instrument, p) {
 	this.instrument = instrument;
 	this.p = p;
 	
-	this.addNoteToPart = function (c, offsetIndex) {	
-		c.offset = offsetIndex
-		this.p.get(0).append(c);
-	}
-	this.addCorrespondingRest = function (c, offsetIndex) {
-		console.log("add Corresponding rest")
-		r = new music21.note.Rest()
-		r.offset = offsetIndex
-		r.duration.quarterLength = c.duration.quarterLength
-		this.p.get(0).append(r);
+	this.addRest = function (pianoChord) {
+		measureNumber = 0
+		r = new music21.note.Rest();
+		r.duration.quarterLength = pianoChord.duration.quarterLength
+		this.get(measureNumber).append(r)
 	}
 	
+	this.lengthenChord = function (pianoChord) {
+		measureNumber = 0;
+		var startOfRest = this.p.flat.elements.get(-1);
+		newRest = new music21.note.Rest();
+		newRest.duration.quarterLength = startOfRest.duration.quarterLength + pianoChord.duration.quarterLength
+	}
+	
+	this.addNote = function (noteIndex, pianoChord) {
+		measureNumber = 0;
+		n = new music21.note.Note()
+		n.pitch = pianoChord.pitches[i]
+	}
+	this.displayPart = function () {
+		var $specifiedCanvas = $('#instrument_'  + splitPart.instrument);
+		$specifiedCanvas.empty();
+		var thisPart = splitPart.p;
+		thisPart.appendNewCanvas($specifiedCanvas);
+	}
 	
 }
 
@@ -130,7 +91,7 @@ function createCanvases() {
 	      '<input type="text" name="textbox' + instrumentName + 
 	      '" id="input_for_' + instrumentName + '" value="" >')
 		
-		var $button = $('<button> Render </button>')
+		var $button = $("<button id = 'button_' + instrumentName + ''> Render </button>")
 	      
 		$inputBox.after().html($button)
 		$canvasDiv.append($inputBox)
@@ -138,3 +99,30 @@ function createCanvases() {
 		p.appendNewCanvas($canvasDiv);
 	}
 }
+
+function processCommand(instrumentName) {
+	var rawText = $('#input_for_' + instrumentName + '' ).val();
+	splitPart = instrumentName
+	for (var i = 0; i < rawText.length; i++ ) {
+		char = rawText.charAt(i);
+		var pianoChord = os.pianoPart.flat.elements[i];
+		if (rawText.charAt(i) != ' ') {
+			if (char == 'r' {
+				splitPart.addRest(pianoChord);
+			} else if ( typeof(char) == "number") {
+				splitPart.addNote(char, pianoChord);
+			} else if ( char == 'r') {
+				splitPart.lengthenNote();
+			}	else {
+				console.alert("At position " + i + "there is an invalid character.")
+			}
+		}
+	}
+}
+
+
+$('#button_' + instrumentName + '').click(function () {
+	processCommand();
+	splitPartName = instrumentName
+	splitPartName.displayPart();	
+});

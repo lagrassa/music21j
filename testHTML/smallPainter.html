@@ -23,15 +23,17 @@
 				mixedMeasure.append(amChord)
 				mixedMeasure.append(gChord)
 				mixedMeasure.append(fChord)
+				mixedPart = new music21.stream.Part()
+				mixedPart.append(mixedMeasure);
 				/* for (var z = 0; z < 4; z++) {
 					for (var i = 0; i<chordArray.length; i++){
 						mixedMeasure.append(chordArray[i]);
 					}
 				} */
-				mixedMeasure.renderOptions.events['click'] = clickFunction.bind(mixedMeasure); 
+				//mixedMeasure.renderOptions.events['click'] = clickFunction.bind(mixedMeasure); 
 				var $canvasDivScore = $('#canvasDivScore');
-				mixedMeasure.appendNewCanvas($canvasDivScore);
-				
+				mixedPart.appendNewCanvas($canvasDivScore);
+				os = new OrchestralScore(mixedPart)
 				 var playSound = false;
 		                        
 			     $('#playSound').bind('click', function() {
@@ -56,7 +58,7 @@
 		</div>
 		<button type='button' id='createCanvases'> Create Staves </button>
 		<div id='canvases' class = 'canvas'></div>
-		<script src='protoPainting.js'> </script>
+		<script src='arrangedByCode.js'> </script>
 		
 	</body>  
 </html>
