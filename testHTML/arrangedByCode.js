@@ -91,8 +91,16 @@ function createCanvases() {
 	      '<input type="text" name="textbox' + instrumentName + 
 	      '" id="input_for_' + instrumentName + '" value="" >')
 		
-		var $button = $("<button id = 'button_' + instrumentName + ''> Render </button>")
-	      
+		var $button = $("<button id = 'renderButton' > Render </button>")
+		$button.attr('val', instrumentName);
+	    
+		$button.bind('click', function() {
+			console.log('value ' + splitPartName)
+			splitPartName = $(this).attr('val');
+			processCommand(splitPartName);
+			splitPartName.displayPart();	
+		});
+		
 		$inputBox.after().html($button)
 		$canvasDiv.append($inputBox)
 		$("#canvases").append($canvasDiv);
@@ -101,13 +109,14 @@ function createCanvases() {
 }
 
 function processCommand(instrumentName) {
+	
 	var rawText = $('#input_for_' + instrumentName + '' ).val();
-	splitPart = instrumentName
+	var splitPart = instrumentName
 	for (var i = 0; i < rawText.length; i++ ) {
 		char = rawText.charAt(i);
 		var pianoChord = os.pianoPart.flat.elements[i];
 		if (rawText.charAt(i) != ' ') {
-			if (char == 'r' {
+			if (char == 'r' ) {
 				splitPart.addRest(pianoChord);
 			} else if ( typeof(char) == "number") {
 				splitPart.addNote(char, pianoChord);
@@ -120,9 +129,3 @@ function processCommand(instrumentName) {
 	}
 }
 
-
-$('#button_' + instrumentName + '').click(function () {
-	processCommand();
-	splitPartName = instrumentName
-	splitPartName.displayPart();	
-});
