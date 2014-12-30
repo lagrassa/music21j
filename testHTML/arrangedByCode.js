@@ -12,9 +12,27 @@ function OrchestralScore(pianoPart){
 		    });
 		return selectedInstruments
 	}
+	
+	this.getSplitPart = function(selectedInstrument) {
+		for (var i = 0; i < this.partList.length; i++ ) {
+			var splitPart = this.partList[i]
+			if (splitPart.instrument == selectedInstrument) {
+				return splitPart
+			}
+		}
+	}
+	this.setSplitPart = function(instrument, p) {
+		newSplitPart = new SplitPart(instrument, p);
+		this.partList.push(newSplitPart);
+	}
 }
 
 function SplitPart (instrument, p, OrchestralScore) {
+	
+	if (typeof(OrchestralScore) == "undefined" ) {
+		OrchestralScore = os
+	}
+	
 	if (instrument === undefined) {
 		instrument = 'piano';
 	} 
@@ -31,7 +49,7 @@ function SplitPart (instrument, p, OrchestralScore) {
 		measureNumber = 0
 		r = new music21.note.Rest();
 		r.duration.quarterLength = pianoChord.duration.quarterLength
-		this.get(measureNumber).append(r)
+		this.p.get(measureNumber).append(r)
 	}
 	
 	this.lengthenChord = function (pianoChord) {
@@ -44,7 +62,8 @@ function SplitPart (instrument, p, OrchestralScore) {
 	this.addNote = function (noteIndex, pianoChord) {
 		measureNumber = 0;
 		n = new music21.note.Note()
-		n.pitch = pianoChord.pitches[i]
+		n.pitch = pianoChord.pitches[noteIndex]
+		this.p.get(measureNumber).append(n)
 	}
 	this.displayPart = function () {
 		var $specifiedCanvas = $('#instrument_'  + splitPart.instrument);
@@ -84,6 +103,7 @@ function createCanvases() {
 		var p = new music21.stream.Part();
 		var newMeasure = new music21.stream.Measure();
 		p.append(newMeasure);
+		os.setSplitPart(instrumentName, p)
 		
 		var $canvasDiv = $("<div class = 'canvasHolder' id='instrument_" + instrumentName + "' align = 'left' > </div>");
 		
@@ -95,10 +115,10 @@ function createCanvases() {
 		$button.attr('val', instrumentName);
 	    
 		$button.bind('click', function() {
-			console.log('value ' + splitPartName)
 			splitPartName = $(this).attr('val');
-			processCommand(splitPartName);
-			splitPartName.displayPart();	
+			splitPart = os.getSplitPart(splitPartName);
+			processCommand(splitPart);
+			splitPart.displayPart();	
 		});
 		
 		$inputBox.after().html($button)
@@ -108,22 +128,24 @@ function createCanvases() {
 	}
 }
 
-function processCommand(instrumentName) {
+function processCommand(splitPart) {
 	
-	var rawText = $('#input_for_' + instrumentName + '' ).val();
-	var splitPart = instrumentName
+	var rawText = $('#input_for_' + splitPart.instrument + '' ).val();
+
+	var nonSpaceCount = 0;
 	for (var i = 0; i < rawText.length; i++ ) {
 		char = rawText.charAt(i);
-		var pianoChord = os.pianoPart.flat.elements[i];
+		var pianoChord = os.pianoScore.flat.elements[nonSpaceCount];
 		if (rawText.charAt(i) != ' ') {
+			nonSpaceCount++
 			if (char == 'r' ) {
 				splitPart.addRest(pianoChord);
-			} else if ( typeof(char) == "number") {
-				splitPart.addNote(char, pianoChord);
+			} else if ( typeof(parseInt(char)) == "number") {
+				splitPart.addNote(parseInt(char), pianoChord);
 			} else if ( char == 'r') {
 				splitPart.lengthenNote();
 			}	else {
-				console.alert("At position " + i + "there is an invalid character.")
+				alert("At position " + i + "there is an invalid character.")
 			}
 		}
 	}
