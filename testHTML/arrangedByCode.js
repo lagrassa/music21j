@@ -1,21 +1,21 @@
 function OrchestralScore(pianoPart){
 	this.pianoScore = pianoPart
+	this.partList = []
+	if (typeof this.splitPartList == "undefined") {
+		console.log("initialize splitPartList as undefined")
+		this.splitPartList = []
+	}
 	if (typeof this.partList == "undefined") {
-		console.log("initialize partList as undefined")
 		this.partList = []
 	}
 	
-	this.getSelectedInstruments = function() {
-		var selectedInstruments = [];
-		$('#instrumentSelect :checked').each(function() {
-			selectedInstruments.push($(this).val());
-		    });
-		return selectedInstruments
+	this.addPart = function (partName) {
+		this.partList.push(partName);
 	}
 	
 	this.getSplitPart = function(selectedInstrument) {
-		for (var i = 0; i < this.partList.length; i++ ) {
-			var splitPart = this.partList[i]
+		for (var i = 0; i < this.splitPartList.length; i++ ) {
+			var splitPart = this.splitPartList[i]
 			if (splitPart.instrument == selectedInstrument) {
 				return splitPart
 			}
@@ -23,7 +23,7 @@ function OrchestralScore(pianoPart){
 	}
 	this.setSplitPart = function(instrument, p) {
 		newSplitPart = new SplitPart(instrument, p);
-		this.partList.push(newSplitPart);
+		this.splitPartList.push(newSplitPart);
 	}
 }
 
@@ -54,9 +54,14 @@ function SplitPart (instrument, p, OrchestralScore) {
 	
 	this.lengthenChord = function (pianoChord) {
 		measureNumber = 0;
-		var startOfRest = this.p.flat.elements.get(-1);
-		newRest = new music21.note.Rest();
-		newRest.duration.quarterLength = startOfRest.duration.quarterLength + pianoChord.duration.quarterLength
+		var last = this.p.flat.elements.get(-1);
+		if (last.isRest()) {
+			var held = new music21.note.Rest();
+		} else {
+			var held = new music21.note.Note();
+			held.pitch = last.pitch;
+		}
+		held.duration.quarterLength = last.duration.quarterLength + pianoChord.duration.quarterLength
 	}
 	
 	this.addNote = function (noteIndex, pianoChord) {
@@ -79,7 +84,7 @@ function SplitPart (instrument, p, OrchestralScore) {
 /**
 *Creates the correct number of canvases with appropriate identifiers. 
 *in the future, this should correspond to the name of the instrument
-*creates partList (global variable) which are parts with currently one measure
+*creates splitPartList  which are parts with currently one measure
 */
 
 $('#createCanvases').click(function () {
@@ -89,6 +94,15 @@ $('#createCanvases').click(function () {
 	createCanvases();
 });
 
+$('#addPart').click(function ()  {
+	var newPartName = $('#inputPart').val()
+	console.log(newPartName)
+	os.addPart(newPartName);
+	$('#inputPart').val('');
+	$newPartName = $('<p> </p>')
+	$newPartName.text(newPartName)
+	$('#existingParts').append($newPartName)
+});
 
 function createCanvases() {
 	$("#canvases").empty();
@@ -97,7 +111,7 @@ function createCanvases() {
 		os = new OrchestralScore('protopainter orchestral score')
 		console.log("created new os object")
 	}
-	var selectedInstruments = os.getSelectedInstruments();
+	selectedInstruments = os.partList
 	for (var i in selectedInstruments) {
 		instrumentName = selectedInstruments[i]
 		var p = new music21.stream.Part();
@@ -106,14 +120,12 @@ function createCanvases() {
 		os.setSplitPart(instrumentName, p)
 		
 		var $canvasDiv = $("<div class = 'canvasHolder' id='instrument_" + instrumentName + "' align = 'left' > </div>");
+		$canvasDiv.css('display', 'list-item')		
 		
-		var $inputBox = $('<label>Input for '+ instrumentName + ' : </label>' +
-	      '<input type="text" name="textbox' + instrumentName + 
-	      '" id="input_for_' + instrumentName + '" value="" >')
+	
 		
 		var $button = $("<button id = 'renderButton' > Render </button>")
 		$button.attr('val', instrumentName);
-	    
 		$button.bind('click', function() {
 			splitPartName = $(this).attr('val');
 			splitPart = os.getSplitPart(splitPartName);
@@ -121,10 +133,25 @@ function createCanvases() {
 			splitPart.displayPart();	
 		});
 		
-		$inputBox.after().html($button)
-		$canvasDiv.append($inputBox)
-		$("#canvases").append($canvasDiv);
+		var $label = $('<p></p>')
+		$label.text('Input for ' + instrumentName);
+		$label.css('display', 'inline')
+		
+		var $inputBox = $('<input type="text" name="textbox' + instrumentName + 
+	      '" id="input_for_' + instrumentName + '" value="" >')
+	      
+		//$inputBox.prepend($label)
+		$inputBox.css('display', 'block')
+		$button.css('display', 'inline')
+		
+		//$inputBox.append($button)
+		
+		$inputBox.add($button);
+		$canvasDiv.append($label, $inputBox)
 		p.appendNewCanvas($canvasDiv);
+		
+		$("#canvases").append($canvasDiv);
+		
 	}
 }
 
