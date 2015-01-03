@@ -52,16 +52,29 @@ function SplitPart (instrument, p, OrchestralScore) {
 		this.p.get(measureNumber).append(r)
 	}
 	
-	this.lengthenChord = function (pianoChord) {
+	this.hold = function (pianoChord) {
 		measureNumber = 0;
-		var last = this.p.flat.elements.get(-1);
-		if (last.isRest()) {
+		var allElements = this.p.flat.elements
+		if (allElements.length > 1) {
+			var last = allElements[allElements.length-1];
+		} else {
+			var last = allElements[0];
+		}
+		if (last.isRest) {
 			var held = new music21.note.Rest();
 		} else {
 			var held = new music21.note.Note();
 			held.pitch = last.pitch;
 		}
-		held.duration.quarterLength = last.duration.quarterLength + pianoChord.duration.quarterLength
+		//held.duration.quarterLength = last.duration.quarterLength + pianoChord.duration.quarterLength
+		//held.type = music21.duration.typeFromNumDict[held.duration.quarterLength]
+		last.tie=  new music21.tie.Tie("start")
+		held.tie = new music21.tie.Tie("stop")
+		if (last.tie.type == 'stop') {
+			last.tie.type = new music21.tie.Tie('continue');
+		}
+		this.p.get(measureNumber).append(held)
+		
 	}
 	
 	this.addNote = function (noteIndex, pianoChord) {
@@ -95,12 +108,12 @@ $('#createCanvases').click(function () {
 });
 
 $('#addPart').click(function ()  {
-	var newPartName = $('#inputPart').val()
-	console.log(newPartName)
+	var displayedPartName = $('#inputPart').val()
+	var newPartName = displayedPartName.replace(" ", "");
 	os.addPart(newPartName);
 	$('#inputPart').val('');
 	$newPartName = $('<p> </p>')
-	$newPartName.text(newPartName)
+	$newPartName.text(displayedPartName)
 	$('#existingParts').append($newPartName)
 });
 
@@ -113,7 +126,8 @@ function createCanvases() {
 	}
 	selectedInstruments = os.partList
 	for (var i in selectedInstruments) {
-		instrumentName = selectedInstruments[i]
+		instrumentDisplayedName = selectedInstruments[i]
+		var instrumentName = instrumentDisplayedName.replace(" ", "");
 		var p = new music21.stream.Part();
 		var newMeasure = new music21.stream.Measure();
 		p.append(newMeasure);
@@ -121,8 +135,6 @@ function createCanvases() {
 		
 		var $canvasDiv = $("<div class = 'canvasHolder' id='instrument_" + instrumentName + "' align = 'left' > </div>");
 		$canvasDiv.css('display', 'list-item')		
-		
-	
 		
 		var $button = $("<button id = 'renderButton' > Render </button>")
 		$button.attr('val', instrumentName);
@@ -134,22 +146,20 @@ function createCanvases() {
 		});
 		
 		var $label = $('<p></p>')
-		$label.text('Input for ' + instrumentName);
+		$label.text('Input for ' + instrumentDisplayedName);
 		$label.css('display', 'inline')
 		
 		var $inputBox = $('<input type="text" name="textbox' + instrumentName + 
 	      '" id="input_for_' + instrumentName + '" value="" >')
 	      
-		//$inputBox.prepend($label)
 		$inputBox.css('display', 'block')
-		$button.css('display', 'inline')
+		$button.css('display', 'block')
 		
-		//$inputBox.append($button)
+
 		
-		$inputBox.add($button);
-		$canvasDiv.append($label, $inputBox)
+		
+		$canvasDiv.append($label, $button, $inputBox)
 		p.appendNewCanvas($canvasDiv);
-		
 		$("#canvases").append($canvasDiv);
 		
 	}
@@ -167,10 +177,10 @@ function processCommand(splitPart) {
 			nonSpaceCount++
 			if (char == 'r' ) {
 				splitPart.addRest(pianoChord);
+			} else if ( char == 'h') {
+				splitPart.hold(pianoChord);
 			} else if ( typeof(parseInt(char)) == "number") {
 				splitPart.addNote(parseInt(char), pianoChord);
-			} else if ( char == 'r') {
-				splitPart.lengthenNote();
 			}	else {
 				alert("At position " + i + "there is an invalid character.")
 			}
