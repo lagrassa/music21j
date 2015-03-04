@@ -94,6 +94,26 @@ define(['./prebase', './duration'],
     base.Music21Object.prototype = new prebase.ProtoM21Object();
     base.Music21Object.prototype.constructor = base.Music21Object;
 	
+    /**
+     * Return the offset of this element in a given site -- use .offset if you are sure that
+     * site === activeSite.
+     * 
+     * Does not change activeSite or .offset
+     * 
+     * @memberof music21.base.Music21Object
+     * @param {music21.stream.Stream} site
+     * @returns Number
+     */
+    base.Music21Object.prototype.getOffsetBySite = function(site) {
+        if (site === undefined) {
+            return this.offset;
+        }
+        for (var i = 0; i < site.length; i++) {
+            if (site._elements[i] === this) {
+                return site._elementOffsets[i];
+            }
+        }
+    };
 	
 	// end of define
 	if (typeof(music21) != "undefined") {

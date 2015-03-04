@@ -3,7 +3,7 @@
  * music21/note -- Note, Rest, NotRest, GeneralNote
  *
  * Copyright (c) 2013-14, Michael Scott Cuthbert and cuthbertLab
- * Based on music21 (=music21p), Copyright (c) 2006–14, Michael Scott Cuthbert and cuthbertLab
+ * Based on music21 (music21p), Copyright (c) 2006–14, Michael Scott Cuthbert and cuthbertLab
  * 
  */
 
@@ -90,12 +90,12 @@ define(['./prebase', './base', './pitch', './beam', './common', 'vexflow'],
 	    prebase.ProtoM21Object.call(this);
 	    this.classes.push('Lyric');
         this.lyricConnector = "-"; // override to place something else between two notes...
-	    this.text = text || undefined;
+	    this.text = text;
 	    this._number = number || 1;
-	    this.syllabic = syllabic || undefined;
+	    this.syllabic = syllabic;
 	    this.applyRaw = applyRaw || false;
         this.setTextAndSyllabic(this.text, this.applyRaw);
-	    this._identifier = identifier || undefined;
+	    this._identifier = identifier;
 	    
         Object.defineProperties(this, {
             'identifier': {
@@ -136,10 +136,10 @@ define(['./prebase', './base', './pitch', './beam', './common', 'vexflow'],
             this.text = undefined;
             return undefined;
         }
-        if (!applyRaw && (rawText.indexOf(this.lyricConnector) == 0) && (rawText.slice(-1) == this.lyricConnector)) {
+        if (!applyRaw && (rawText.indexOf(this.lyricConnector) === 0) && (rawText.slice(-1) == this.lyricConnector)) {
             this.text = rawText.slice(1,-1);
             this.syllabic = 'middle';
-        } else if (!applyRaw && (rawText.indexOf(this.lyricConnector) == 0)) {
+        } else if (!applyRaw && (rawText.indexOf(this.lyricConnector) === 0)) {
             this.text = rawText.slice(1);
             this.syllabic = 'end';
         } else if (!applyRaw && (rawText.slice(-1) == this.lyricConnector)) {
@@ -177,7 +177,7 @@ define(['./prebase', './base', './pitch', './beam', './common', 'vexflow'],
 		base.Music21Object.call(this);
 		this.classes.push('GeneralNote');
 		this.isChord = false;
-        if (ql != undefined) {
+        if (ql !== undefined) {
             this.duration.quarterLength = ql;
         }
         this.volume = 60;
@@ -288,6 +288,7 @@ define(['./prebase', './base', './pitch', './beam', './common', 'vexflow'],
                 vfn.addDotToAll();                
             }
         }
+        
         if (this.activeSite !== undefined && this.activeSite.renderOptions.stemDirection !== undefined) {
             this.stemDirection = this.activeSite.renderOptions.stemDirection;
         } else if (this.stemDirection === undefined && options.clef !== undefined) {
@@ -338,7 +339,7 @@ define(['./prebase', './base', './pitch', './beam', './common', 'vexflow'],
             tempo = 120;
         }
         if (options === undefined) {
-            var inst = undefined;
+            var inst;
             if (this.activeSite !== undefined) {
                 inst = this.activeSite.instrument;
             }
@@ -355,13 +356,14 @@ define(['./prebase', './base', './pitch', './beam', './common', 'vexflow'],
         var milliseconds = 60 * 1000 / tempo;
         var ql = this.duration.quarterLength;
         milliseconds = 60 * ql * 1000 / tempo;
+        var midNum;
         if (this.isClassOrSubclass('Note')) { // Note, not rest
-            var midNum = this.pitch.midi;                         
+            midNum = this.pitch.midi;                         
             var stopTime = milliseconds/1000;
             if (nextElement !== undefined && nextElement.isClassOrSubclass('Note')) {
                 if (nextElement.pitch.midi != this.pitch.midi) {
-                    stopTime += 60 * .25 / tempo; // legato -- play 16th note longer
-                } else if (this.tie != undefined && (this.tie.type == 'start' || this.tie.type =='continue')) {
+                    stopTime += 60 * 0.25 / tempo; // legato -- play 16th note longer
+                } else if (this.tie !== undefined && (this.tie.type == 'start' || this.tie.type =='continue')) {
                     stopTime += 60 * nextElement.duration.quarterLength / tempo;
                     // this does not take into account 3 or more notes tied.
                     // TODO: look ahead at next nexts, etc.
@@ -380,7 +382,7 @@ define(['./prebase', './base', './pitch', './beam', './common', 'vexflow'],
         } else if (this.isClassOrSubclass('Chord')) {
             // TODO: Tied Chords.
             for (var j = 0; j < this._noteArray.length; j++) {
-                var midNum = this._noteArray[j].pitch.midi;
+                midNum = this._noteArray[j].pitch.midi;
                 music21.MIDI.noteOn(channel, midNum, volume, 0);                      
                 music21.MIDI.noteOff(channel, midNum, milliseconds/1000);                     
             }
@@ -454,7 +456,7 @@ define(['./prebase', './base', './pitch', './beam', './common', 'vexflow'],
 		this.classes.push('Note');
 		this.isNote = true; // for speed
 		this.isRest = false; // for speed
-		if (nn !== undefined && nn.isClassOrSubclass !== undefined && nn.isClassOrSubclass('Pitch') == true) {
+		if (nn !== undefined && nn.isClassOrSubclass !== undefined && nn.isClassOrSubclass('Pitch') === true) {
 		    this.pitch = nn;
 		} else {
 	        this.pitch = new pitch.Pitch(nn);		    
@@ -532,26 +534,28 @@ define(['./prebase', './base', './pitch', './beam', './common', 'vexflow'],
             return undefined;
         }
         var vexflowKey = this.pitch.vexflowName(clef);
-        var vfn = new Vex.Flow.StaveNote({keys: [vexflowKey], 
-                                      duration: vfd});
+        var vfn = new Vex.Flow.StaveNote({
+            keys: [vexflowKey], 
+            duration: vfd,
+        });
         this.vexflowAccidentalsAndDisplay(vfn, params); // clean up stuff...
-        if (this.pitch.accidental != undefined) {
-            if (this.pitch.accidental.vexflowModifier != 'n' && this.pitch.accidental.displayStatus != false) {
+        if (this.pitch.accidental !== undefined) {
+            if (this.pitch.accidental.vexflowModifier != 'n' && this.pitch.accidental.displayStatus !== false) {
                 vfn.addAccidental(0, new Vex.Flow.Accidental(this.pitch.accidental.vexflowModifier));
-            } else if (this.pitch.accidental.displayType == 'always' || this.pitch.accidental.displayStatus == true) {
+            } else if (this.pitch.accidental.displayType == 'always' || this.pitch.accidental.displayStatus === true) {
                 vfn.addAccidental(0, new Vex.Flow.Accidental(this.pitch.accidental.vexflowModifier));           
             }
         }
         
-        if (this.articulations[0] != undefined) {
+        if (this.articulations[0] !== undefined) {
             for (var i = 0; i < this.articulations.length; i++ ) {
                 var art = this.articulations[i];
                 vfn.addArticulation(0, art.vexflow()); // 0 refers to the first pitch (for chords etc.)...
             }
         }
-        if (this.expressions[0] != undefined) {
-            for (var i = 0; i < this.expressions.length; i++ ) {
-                var exp = this.expressions[i];
+        if (this.expressions[0] !== undefined) {
+            for (var j = 0; j < this.expressions.length; j++ ) {
+                var exp = this.expressions[j];
                 vfn.addArticulation(0, exp.vexflow()); // 0 refers to the first pitch (for chords etc.)...
             }
         }

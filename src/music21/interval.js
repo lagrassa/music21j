@@ -3,7 +3,7 @@
  * music21/interval -- Interval routines
  *
  * Copyright (c) 2013-14, Michael Scott Cuthbert and cuthbertLab
- * Based on music21 (=music21p), Copyright (c) 2006–14, Michael Scott Cuthbert and cuthbertLab
+ * Based on music21 (=music21p), Copyright (c) 2006-14, Michael Scott Cuthbert and cuthbertLab
  * 
  */
 
@@ -123,7 +123,7 @@ define(['./prebase', './pitch'],
 	interval.GenericInterval = function (gi) {
 	    prebase.ProtoM21Object.call(this);
 		this.classes.push('GenericInterval');
-		if (gi == undefined) {
+		if (gi === undefined) {
 			gi = 1;
 		}
 		this.value = gi; // todo: convertGeneric() from python
@@ -148,7 +148,7 @@ define(['./prebase', './pitch'],
 		
 		var tempSteps = this.undirected % 7;
 		var tempOctaves = parseInt(this.undirected / 7);
-		if (tempSteps == 0) {
+		if (tempSteps === 0) {
 			tempOctaves -= 1;
 			tempSteps = 7;
 		}
@@ -373,10 +373,10 @@ define(['./prebase', './pitch'],
         prebase.ProtoM21Object.call(this);
 	    this.classes.push('DiatonicInterval');
 
-		if (specifier == undefined) {
+		if (specifier === undefined) {
 			specifier = "P";
 		}
-		if (generic == undefined) {
+		if (generic === undefined) {
 			generic = new interval.GenericInterval(1);
 		} else if (typeof generic == 'number') {
 		    generic = new interval.GenericInterval(generic);
@@ -500,7 +500,7 @@ define(['./prebase', './pitch'],
 		this.directed = value;
 		this.undirected = Math.abs(value);
 		
-		if (this.directed == 0) {
+		if (this.directed === 0) {
 			this.direction = interval.IntervalDirections.OBLIQUE;
 		} else if (this.directed == this.undirected) {
 			this.direction = interval.IntervalDirections.ASCENDING;	
@@ -546,7 +546,7 @@ define(['./prebase', './pitch'],
      */
     interval.ChromaticInterval.prototype.transposePitch = function (p) {
         var useImplicitOctave = false;
-        if (p.octave == undefined) {
+        if (p.octave === undefined) {
             // not yet implemented in m21j
             useImplicitOctave = true;
         }
@@ -570,9 +570,9 @@ define(['./prebase', './pitch'],
 	 * @returns {Array} two element array of {string} stepName and {Int} octave
 	 */
 	interval.IntervalConvertDiatonicNumberToStep = function (dn) {
-		var stepNumber = undefined;
-		var octave = undefined;
-		if (dn == 0) {
+		var stepNumber;
+		var octave;
+		if (dn === 0) {
 			return ["B", -1];
 		} else if (dn > 0) {
 			octave = Math.floor( (dn-1) / 7 );
@@ -621,7 +621,7 @@ define(['./prebase', './pitch'],
 				var dI = new interval.DiatonicInterval(specifier, gI);
 				this.diatonic = dI;
 				this.chromatic = this.diatonic.getChromatic();			
-			} else if (arg0.specifier != undefined) {
+			} else if (arg0.specifier !== undefined) {
 				// assume diatonic...
 				this.diatonic = arg0;
 				this.chromatic = this.diatonic.getChromatic();
@@ -709,7 +709,7 @@ define(['./prebase', './pitch'],
         
         /*
         var useImplicitOctave = false;
-        if (p.octave == undefined) {
+        if (p.octave === undefined) {
             useImplicitOctave = true;
         }
         */
@@ -717,7 +717,7 @@ define(['./prebase', './pitch'],
         pitch2.accidental = undefined;
         // step and octave are right now, but not necessarily accidental
         var halfStepsToFix = this.chromatic.semitones - parseInt(pitch2.ps - p.ps);
-        if (halfStepsToFix != 0) {
+        if (halfStepsToFix !== 0) {
             pitch2.accidental = new pitch.Accidental(halfStepsToFix);
         }
         if (music21.debug) {
@@ -749,7 +749,7 @@ define(['./prebase', './pitch'],
     };
     
     interval.convertStaffDistanceToInterval = function(staffDist) {
-        if (staffDist == 0) {
+        if (staffDist === 0) {
             return 1;
         } else if (staffDist > 0) {
             return staffDist + 1;
@@ -783,7 +783,7 @@ define(['./prebase', './pitch'],
         if (    gInt.direction != cInt.direction && 
                 gInt.direction != interval.IntervalDirections.OBLIQUE && 
                 cInt.direction != interval.IntervalDirections.OBLIQUE) {
-            // intervals like d2 and dd2 etc. (the last test doesn't matter, since -1*0 == 0, but in theory it should be there)
+            // intervals like d2 and dd2 etc. (the last test doesn't matter, since -1*0 === 0, but in theory it should be there)
             theseSemis = -1 * cInt.undirected;            
         } else if (gInt.undirected == 1) {
             theseSemis = cInt.directed; // matters for unison            

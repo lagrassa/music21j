@@ -10,9 +10,9 @@ if (typeof(music21) === "undefined") {
      * 
      * See http://web.mit.edu/music21/ for more details.
      * 
-     * Copyright (c) 2013-14, Michael Scott Cuthbert and cuthbertLab
+     * Copyright (c) 2013-15, Michael Scott Cuthbert and cuthbertLab
      * 
-     * Based on music21, Copyright (c) 2006-14, Michael Scott Cuthbert and cuthbertLab
+     * Based on music21, Copyright (c) 2006-15, Michael Scott Cuthbert and cuthbertLab
      * The plan is to implement all core music21 features as Javascript and to expose
      * more sophisticated features via server-side connections to remote servers running the
      * python music21 (music21p).
@@ -31,7 +31,7 @@ if (typeof(music21) === "undefined") {
      *  
      * @namespace 
      */
-    music21 = {VERSION: 0.4};
+    music21 = {VERSION: 0.5};
 }
 //console.log('hi before: ' + require.toUrl('hi'));
 //console.log('./hi before: ' + require.toUrl('./hi'));
@@ -50,24 +50,24 @@ require.config({
 
 var pathSimplify = function (path) {
     var pPrefix = "";
-    if (path.indexOf('//') == 0) {
+    if (path.indexOf('//') === 0) {
         pPrefix = '//'; //cdn loading;
         path = path.slice(2);
         console.log('cdn load: ', pPrefix, " into ", path);
-    } else if (path.indexOf('://') != -1) { // for cross site requests...
+    } else if (path.indexOf('://') !== -1) { // for cross site requests...
         var protoSpace = path.indexOf('://');
         pPrefix = path.slice(0, protoSpace + 3);
         path = path.slice(protoSpace + 3);
         console.log('cross-site split', pPrefix, path);
     }
     var ps = path.split('/');
-    var addSlash = (path.slice(path.length - 1, path.length) == '/') ? true : false;
+    var addSlash = (path.slice(path.length - 1, path.length) === '/') ? true : false;
     var pout = [];
     for (var i = 0; i < ps.length; i++) {
        var el = ps[i];
-       if (el == '..') {
+       if (el === '..') {
            if (pout.length > 0) {
-               if (pout[pout.length - 1] != '..') {
+               if (pout[pout.length - 1] !== '..') {
                    pout.pop();                          
                } else {
                    pout.push('..');
@@ -75,8 +75,8 @@ var pathSimplify = function (path) {
            } else {
                pout.push('..');
            }
-       } else if (el == '') { 
-          // pass
+       //} else if (el == '') { 
+       //   // pass
        } else {
            pout.push(el);
        }
@@ -102,14 +102,18 @@ var getM21attribute = function (attrName) {
         }
     }
 };
-var warnBanner = (getM21attribute('warnBanner') != 'no' ) ? true : false;
+var warnBanner = (getM21attribute('warnBanner') !== 'no' ) ? true : false;
 
 // get scriptConfig
 if (typeof m21conf === 'undefined') {
     m21conf = {};
     var m21browserAttribute = getM21attribute('m21conf');
-    if (m21browserAttribute != null) {
-        m21conf = JSON.parse(m21browserAttribute);
+    if (m21browserAttribute !== null && m21browserAttribute !== undefined) {
+        try {
+            m21conf = JSON.parse(m21browserAttribute);
+        } catch (e) {
+            console.log('Unable to JSON parse ' + m21browserAttribute.toString() + ' into m21conf');
+        }
     }
 }
 
@@ -124,7 +128,7 @@ if (typeof m21srcPath === 'undefined') {
 music21.m21srcPath = m21srcPath;
 //console.log('m21srcPath', m21srcPath);
 //console.log('m21srcPath non simplified', require.toUrl('music21'));
-music21.soundfontUrl = require.toUrl('music21') + '/../ext/midijs/soundfont/';
+music21.soundfontUrl = require.toUrl('music21').replace(/\?bust=\w*/, '') + '/../ext/midijs/soundfont/';
 
 var m21requireConfig = {
     paths: {
@@ -135,7 +139,7 @@ var m21requireConfig = {
         'MIDI':         pathSimplify(m21srcPath + '/ext/midijs/build/MIDI'),
         'Base64':       pathSimplify(m21srcPath + '/ext/midijs/inc/Base64'),             
         'base64binary': pathSimplify(m21srcPath + '/ext/midijs/inc/base64binary'),
-        //'es6-shim': './ext/es6-shim',
+        'es6-shim': pathSimplify(m21srcPath + '/ext/es6-shim'),
         //'vexflowMods': 'ext/vexflowMods',
     },
     packages: [
@@ -172,13 +176,14 @@ var m21modules = ['MIDI',
                   'jsonpickle',
                   'jquery-ui',
                   'attrchange',
+                  'es6-shim',
                   './music21/moduleLoader',                  
                   ];
 //BUG: will this work if multiple files are listed in noLoad???
 if (m21conf.noLoad !== undefined) {
     m21conf.noLoad.forEach(function(val, i, noLoad) {
         var mi = m21modules.indexOf(val);
-        if (mi != -1) {
+        if (mi !== -1) {
             m21modules.splice(mi, 1);
         }
     });
@@ -188,10 +193,10 @@ if (m21conf.noLoad !== undefined) {
 if ((Object.defineProperties === undefined) && warnBanner) {
     var newDiv = document.createElement("div");
     newDiv.setAttribute('style', 'font-size: 40px; padding: 40px 20px 40px 20px; margin-top: 20px; line-height: 50px; width: 500px; height: 400px; color: #ffffff; background-color: #900000;');
-    var textInside = document.createTextNode('Unfortunately, IE8, Safari 4 (Leopard), and other out-of-date browsers do not work with music21j. Please upgrade your browser w/ the link above.');
+    var textInside = document.createTextNode('Unfortunately, IE9, Safari 4 or 5 (Leopard/Snow Leopard), and other out-of-date browsers do not work with music21j. Please upgrade your browser w/ the link above.');
     newDiv.appendChild(textInside);
     document.body.appendChild(newDiv);
-    var $buoop  = {test: false, reminder: 0};
+    var $buoop  = {test: false, reminder: 0}; // used by update.js...
     var e = document.createElement("script");
     e.setAttribute("type", "text/javascript"); 
     e.setAttribute("src", "http://browser-update.org/update.js"); 
@@ -199,7 +204,6 @@ if ((Object.defineProperties === undefined) && warnBanner) {
 
 } else {
     if ( typeof define === "function" && define.amd) {
-            console.log('inside require'); 
             require.config(m21requireConfig);
             //console.log(require.nameToUrl('jquery'));
             define( m21modules, 
@@ -212,16 +216,16 @@ if ((Object.defineProperties === undefined) && warnBanner) {
                     else { console.log('could not load VexFlow'); }
                     if (music21.MIDI) {
                         if ((music21.scriptConfig.loadSoundfont === undefined) ||
-                                (music21.scriptConfig.loadSoundfont != false)) {
+                                (music21.scriptConfig.loadSoundfont !== false)) {
                            music21.miditools.loadSoundfont('acoustic_grand_piano');
                         } else {
                             console.log('skipping loading sound font');
                         }
                     }
                     if ((music21.scriptConfig.renderHTML === undefined) ||
-                            (music21.scriptConfig.renderHTML != false)) {
+                            (music21.scriptConfig.renderHTML !== false)) {
                         $(document).ready(function() {
-                            music21.tinyNotation.RenderNotationDivs();
+                            music21.tinyNotation.renderNotationDivs();
                         });
                     }
                     //console.log('end inside of require...');
