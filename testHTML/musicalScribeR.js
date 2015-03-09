@@ -60,14 +60,14 @@ function setupScribe() {
         }
     });
 }
-/**
- * Finds value of radio buttons for selected staves
- * 
- * @returns {Array<Boolean>} First element is whether selection is treble only; Second element is whether selection is bass only
- */
 
+//Will be changed if I decide to use something more sophisticated than a global variable
 function getStreamLength(){
-	streamLength=$('#streamLengthDiv').text();
+	if (typeof(globalStreamLength)=="undefined"){
+		var streamLength=5;
+	} else{
+		var streamLength = globalStreamLength;
+	}
 	return streamLength;
 }
 
@@ -138,7 +138,8 @@ function getSelectedStaff() {
 
 
 function appendElement(appendObject) {	
-	streamLength=getStreamLength();
+	var streamLength=getStreamLength();
+	console.log(streamLength)
 	console.log('appendElement ran');
 
 	if (appendObject.isNote) {
@@ -218,6 +219,39 @@ function appendChordsToStreams(s, chordToAppend, newRest, streamLength) {
 	shortenStream(s, streamLength);
 }
 
+
+function consolidateRests(s){
+	var notes = s.elements;
+	var i = 0;
+	beginRestIndex = null;
+	while (i < notes.length) {
+		while (notes[i].isRest()) {
+			if (beginRestIndex == null) {
+				var beginRestIndex = i;
+			} 
+			var restLength = restLength+notes[i].duration.quarterLength();
+			i++;
+		} 
+		
+		if (restLength>0) {
+			var endRestIndex = i;
+			var before_rest = s.elements.slice(0,beginRestIndex);
+			var after_rest = s.elements.slice(endRestIndex);
+			var r = new music21.note.Rest();
+			r.duration.quarterLength = restLength;
+			before_rest.push(r);
+			s.elements=before_rest + after_rest;
+			
+		}
+		var restLength=0;
+		beginRestIndex = null;
+		var endRestIndex = null;
+		i++;
+		}
+		
+	}
+
+
 /**
  * Takes a chord and creates two chords in separate staves
  * 
@@ -288,9 +322,23 @@ function fixRestDuration(streamToBeFixed, correctStream){
  * @returns {stream} s -the stream with a length no longer than streamLength
  */
 function shortenStream(s, streamLength) {	
-	if (s.length > streamLength) {
-			s.elements = s.elements.slice(1);  		    
+	var streamLength = getStreamLength();
+	if (s.elements.length > streamLength) {
+			var difference = s.elements.length-streamLength;
+			s.elements = s.elements.slice(difference);  		    
 	}
 	return s;
 }
 
+/*$('#changeStreamLength').click(function () {
+	globalStreamLength = $('inputStreamLength').val();
+}); */
+
+$('#addPart').click(function ()  {
+	var displayedPartName = $('#inputPart').val()
+	var newPartName = displayedPartName.replace(" ", "");
+	os.addPart(newPartName);
+	$newPartName = $('<p> </p>')
+	$newPartName.text(displayedPartName)
+	$('#existingParts').append($newPartName)
+});
