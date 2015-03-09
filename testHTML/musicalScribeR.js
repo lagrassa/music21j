@@ -139,8 +139,6 @@ function getSelectedStaff() {
 
 function appendElement(appendObject) {	
 	var streamLength=getStreamLength();
-	console.log(streamLength)
-	console.log('appendElement ran');
 
 	if (appendObject.isNote) {
 		var appendChord = new music21.chord.Chord();
@@ -159,6 +157,10 @@ function appendElement(appendObject) {
 		b.get(-1).duration = music21.miditools.lastElement.duration;
 	}
 	
+	displayParts();
+}
+
+function displayParts(){
 	if 	($('#separatedValue').text() == 0) {
 	    var $canvasDivScore = $("#canvasDivScore");    
 	    $canvasDivScore.empty();        
@@ -330,9 +332,12 @@ function shortenStream(s, streamLength) {
 	return s;
 }
 
-/*$('#changeStreamLength').click(function () {
-	globalStreamLength = $('inputStreamLength').val();
-}); */
+$('#changeStreamLength').click(function () {
+	globalStreamLength = parseInt($('#inputStreamLength').val());
+	shortenStream(t, globalStreamLength);
+	shortenStream(b, globalStreamLength);
+	displayParts();
+}); 
 
 $('#addPart').click(function ()  {
 	var displayedPartName = $('#inputPart').val()
