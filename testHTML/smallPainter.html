@@ -19,21 +19,19 @@
 				var amChord= new music21.chord.Chord(['A5', 'C5', 'E5']); 
 				var shortChord = new music21.chord.Chord(['A5', 'C5']);
 				var chordArray=[cChord, gChord, fChord, amChord, shortChord]
-				mixedMeasure = new music21.stream.Measure();
-				mixedMeasure.append(amChord)
-				mixedMeasure.append(gChord)
-				mixedMeasure.append(fChord)
-				mixedPart = new music21.stream.Part()
-				mixedPart.append(mixedMeasure);
+				mixedPart = new music21.stream.Measure();
+				mixedPart.append(amChord)
+				mixedPart.append(gChord)
+				mixedPart.append(fChord)
 				/* for (var z = 0; z < 4; z++) {
 					for (var i = 0; i<chordArray.length; i++){
-						mixedMeasure.append(chordArray[i]);
+						mixedPart.append(chordArray[i]);
 					}
 				} */
-				//mixedMeasure.renderOptions.events['click'] = clickFunction.bind(mixedMeasure); 
+				mixedPart.renderOptions.events['click'] = clickFunction.bind(mixedPart); 
 				var $canvasDivScore = $('#canvasDivScore');
 				mixedPart.appendNewCanvas($canvasDivScore);
-				os = new OrchestralScore(mixedPart);
+				
 				 var playSound = false;
 		                        
 			     $('#playSound').bind('click', function() {
@@ -48,19 +46,17 @@
 			
 		</script>
 		<div id = "canvasDivScore" ></div>
+		<h2> Separated Lines</h2>
 		<div id='canvases' align='center'>
 		</div>
 		<div id='instrumentSelect'>
-			<p> Insert names of parts below </p>
-			<textarea id = 'inputPart' rows="1" cols="30"> </textarea>
-			<button id = "addPart"> Add Part</button>
-			<div id = "existingParts">
-				<p> <i> Existing parts </i> </p>
-			</div>
+		<input type="checkbox" name="instrument" value="floonorp">Floonorp<br>
+		<input type="checkbox" name="instrument"  value="slitherhorn">Slitherhorn<br>
+		<input type="checkbox" checked name="instrument"  value="bawoonka">Bawoonka
 		</div>
 		<button type='button' id='createCanvases'> Create Staves </button>
-		
-		<script src='arrangedByCode.js'> </script>
+		<div id='canvases' class = 'canvas'></div>
+		<script src='protoPainting.js'> </script>
 		
 	</body>  
 </html>

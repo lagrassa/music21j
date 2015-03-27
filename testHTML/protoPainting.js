@@ -160,6 +160,7 @@ function displayParts() {
  * @returns {chord.Chord} chord made from the selected note and chord
  */
 function getNoteFromChordAndDNN(_) {
+	console.log(_)
 	dNN = _[0];
 	c = _[1];
 	var minNoteDistance = 100; //some big number
@@ -187,10 +188,13 @@ function getNoteFromChordAndDNN(_) {
 
 
 var clickFunction = function (e) {
+	console.log('clickfunction occurs');
 	var canvasElement = e.currentTarget;
+    console.log('here');
     var _ = this.findNoteForClick(canvasElement, e);
     var dNN = _[0];
     var c = _[1];
+    console.log('here');
     var noteIndex = undefined;
     for (var i = 0; i < this.flat.elements.length; i++ ){
     	if ( c === this.flat.elements[i] ) {
