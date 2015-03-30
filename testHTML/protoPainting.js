@@ -1,5 +1,6 @@
 function OrchestralScore(name){
 	this.name = name
+	this.pianoMeasure = mixedMeasure;
 	if (typeof this.partList == "undefined") {
 		console.log("initialize partList as undefined")
 		this.partList = []
@@ -26,21 +27,6 @@ function OrchestralScore(name){
 		return selectedInstruments
 	}
 	
-	this.getRestingInstruments = function () {
-		var unchecked = [];
-		$('#instrumentSelect :not(:checked)').each(function() {
-			unchecked.push($(this).val());
-		    });
-		var resting = [];
-		for (var i = 0; i < unchecked.length; i++) {
-			if (typeof (os.getSplitPart(unchecked[i])) != "undefined") {
-					if (unchecked[i] != "") {
-						resting.push(unchecked[i])
-					}
-			}
-		}
-		return resting
-	}
 	
 	this.addRests = function (newSplitPart) {
 			
@@ -79,16 +65,20 @@ function SplitPart (instrument, p) {
 	this.instrument = instrument;
 	this.p = p;
 	
-	this.addNoteToPart = function (c, offsetIndex) {	
-		c.offset = offsetIndex
-		this.p.get(0).append(c);
-	}
-	this.addCorrespondingRest = function (c, offsetIndex) {
-		console.log("add Corresponding rest")
-		r = new music21.note.Rest()
-		r.offset = offsetIndex
-		r.duration.quarterLength = c.duration.quarterLength
-		this.p.get(0).append(r);
+	this.addNoteToPart = function (c, noteIndex) {	
+		for (var notePlace = 0; notePlace < noteIndex; notePlace++){
+			if (typeof(this.p.get(0).elements[notePlace]) == "undefined") {
+				var r = new music21.note.Rest();
+				if (typeof(os) == "undefined") {
+					console.log("No orchestral score was created yet");
+					return;
+				}
+				var correspondingPianoNote = os.pianoMeasure.elements[notePlace];
+				r.duration.quarterLength = correspondingPianoNote.duration.quarterLength;
+				this.p.get(0).elements[notePlace] = r;
+			}
+		}
+		this.p.get(0).elements[noteIndex] = c;
 	}
 	
 	
@@ -163,6 +153,10 @@ function getNoteFromChordAndDNN(_) {
 	console.log(_)
 	dNN = _[0];
 	c = _[1];
+	if (typeof(c) == "undefined") {
+		console.log('undefined chord');
+		return undefined
+	}
 	var minNoteDistance = 100; //some big number
 	for (var i = 0; i< c.pitches.length; i++) {
 		chordDNN= c.pitches[i].diatonicNoteNum
@@ -180,7 +174,6 @@ function getNoteFromChordAndDNN(_) {
 	var selectedNote = new music21.note.Note();
 	selectedNote.pitch.diatonicNoteNum=correctdNN;
 	var oneNoteChord = new music21.chord.Chord();
-	selectedNote.offset = c.offset
 	oneNoteChord.add(selectedNote);
 	console.log(oneNoteChord.pitches[0].name);
 	return oneNoteChord;
@@ -188,42 +181,32 @@ function getNoteFromChordAndDNN(_) {
 
 
 var clickFunction = function (e) {
-	console.log('clickfunction occurs');
 	var canvasElement = e.currentTarget;
-    console.log('here');
     var _ = this.findNoteForClick(canvasElement, e);
     var dNN = _[0];
     var c = _[1];
-    console.log('here');
     var noteIndex = undefined;
     for (var i = 0; i < this.flat.elements.length; i++ ){
     	if ( c === this.flat.elements[i] ) {
-    		noteIndex = i
+    		noteIndex = i;
     	}
     }
 	var oneNoteChord=getNoteFromChordAndDNN(_)
-	offsetIndex = oneNoteChord.offset
-	assignNoteToParts(oneNoteChord, offsetIndex)
+	if (typeof(oneNoteChord)=="undefined") {
+		return;
+	}
+	assignNoteToParts(oneNoteChord, noteIndex)
 	displayParts()
 };
 
 
-function assignNoteToParts(c,  offsetIndex) {
+function assignNoteToParts(c,  noteIndex) {
 	var selectedInstruments = os.getSelectedInstruments();
 	for (var i = 0; i < selectedInstruments.length; i++) {
 		var instrument = selectedInstruments[i];
 		partToAppendTo = os.getSplitPart(instrument);
-		partToAppendTo.addNoteToPart(c, offsetIndex);
+		partToAppendTo.addNoteToPart(c, noteIndex);
 		
-	}
-	var otherInstruments = os.getRestingInstruments();
-	if (otherInstruments.length > 0 ) {
-		for (var j = 0; j < otherInstruments.length; j++) {
-			var instrument = otherInstruments[j];
-			partToAppendTo = os.getSplitPart(instrument);
-			partToAppendTo.addCorrespondingRest(c, offsetIndex);
-			
-		}
 	}
 	
 }
