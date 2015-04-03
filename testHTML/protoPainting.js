@@ -1,6 +1,9 @@
 function OrchestralScore(name){
 	this.name = name
     this.notesFilledCount;
+	if (typeof this.score == "undefined") {
+	       this.score = new music21.stream.Score();
+	 }
     if (typeof this.notesFilledCount == "undefined") {
        this.notesFilledCount = 0;
     }
@@ -51,6 +54,7 @@ function OrchestralScore(name){
 			}
 		}
 		this.partList.push(newSplitPart)
+		this.score.insert(0,newSplitPart.p);
 		
 		
 	}
@@ -124,37 +128,31 @@ function createCanvases() {
 	var selectedInstruments = os.getSelectedInstruments();
 	for (var i in selectedInstruments) {
 		instrumentName = selectedInstruments[i]
-		var p = new music21.stream.Part();
-		var newMeasure = new music21.stream.Measure();
-		p.append(newMeasure);
-		var $canvasDiv = $("<div class = 'canvasHolder' id='instrument_" + instrumentName + "' align = 'left' > </div>");
-		$("#canvases").append($canvasDiv);
-		$canvasDiv.html("<b>" + instrumentName + "</b>")
-		
-		
-		
-		
-		//Checks to see if splitPart with that name already exists and makes one if not
-		
-		if (typeof (os.getSplitPart(instrumentName))=="undefined" ) {
+		if (typeof(os.getSplitPart(instrumentName))=="undefined" ) {
+			var p = new music21.stream.Part();
+			var newMeasure = new music21.stream.Measure();
+			p.append(newMeasure);			
 			os.makeSplittedPart(instrumentName, p);
+		} else {
+			var p = os.getSplitPart(instrumentName).p
 		}
-
-		p.appendNewCanvas($canvasDiv);
 	}
+	var $canvasDiv = $("<div class = 'canvasHolder' id = 'canvasDiv' align = 'left' > </div>");
+	$("#canvases").append($canvasDiv);
+	$canvasDiv.html("<b>" + "Score" + "</b>")
+	os.score.appendNewCanvas($canvasDiv);
+		
 }
 /**
  * Changes the appropriate canvases (very similar to createCanvases, might merge them)
  * 
  */
 function displayParts() {
-	for (var sp = 0; sp < os.partList.length; sp++) {
-		splitPart = os.partList[sp];
-		var $specifiedCanvas = $('#instrument_'  + splitPart.instrument);
+		var $specifiedCanvas = $('#canvasDiv');
 		$specifiedCanvas.empty();
-		var thisPart = splitPart.p;
-		thisPart.appendNewCanvas($specifiedCanvas);
-	}
+		var currentScore = os.score;
+		currentScore.appendNewCanvas($specifiedCanvas);
+	
 }
 
 
