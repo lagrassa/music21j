@@ -1,9 +1,13 @@
 function OrchestralScore(name){
 	this.name = name
+    this.notesFilledCount;
+    if (typeof this.notesFilledCount == "undefined") {
+       this.notesFilledCount = 0;
+    }
 	this.pianoMeasure = mixedMeasure;
 	if (typeof this.partList == "undefined") {
 		console.log("initialize partList as undefined")
-		this.partList = []
+		this.partList = [];
 	}
 	//this.splitPart = SplitPart(instrument, part)
 	this.getSplitPart = function(selectedInstrument) {
@@ -24,7 +28,7 @@ function OrchestralScore(name){
 		$('#instrumentSelect :checked').each(function() {
 			selectedInstruments.push($(this).val());
 		    });
-		return selectedInstruments
+		return selectedInstruments;
 	}
 	
 	
@@ -67,6 +71,12 @@ function SplitPart (instrument, p) {
 	
 	this.addNoteToPart = function (c, noteIndex) {	
 		for (var notePlace = 0; notePlace < noteIndex; notePlace++){
+			if (this.p.get(0).elements.length-1 < notePlace &&  notePlace < os.notesFilledCount ){
+				var r = new music21.note.Rest();				
+				var correspondingPianoNote = os.pianoMeasure.elements[notePlace];
+				r.duration.quarterLength = correspondingPianoNote.duration.quarterLength;
+				this.p.get(0).elements[notePlace] = r;
+			}
 			if (typeof(this.p.get(0).elements[notePlace]) == "undefined") {
 				var r = new music21.note.Rest();
 				if (typeof(os) == "undefined") {
@@ -79,6 +89,9 @@ function SplitPart (instrument, p) {
 			}
 		}
 		this.p.get(0).elements[noteIndex] = c;
+		if (p.get(0).elements.length > os.notesFilledCount) {
+			os.notesFilledCount++;
+		}
 	}
 	
 	
