@@ -13,36 +13,9 @@
     	
 		<script>
 			require(['music21'], function () { 	
-				var cChord=new music21.chord.Chord(['C5', 'E5', 'G5']);
-				var gChord=new music21.chord.Chord(['G5', 'B5', 'D5']);
-				var fChord=new music21.chord.Chord(['F5', 'A5', 'C5']);
-				var amChord= new music21.chord.Chord(['A5', 'C5', 'E5']); 
-				var shortChord = new music21.chord.Chord(['A5', 'C5']);
-				var chordArray=[cChord, gChord, fChord, amChord, shortChord]
-				mixedMeasure = new music21.stream.Measure();
-				mixedMeasure.append(amChord)
-				mixedMeasure.append(cChord)
-				mixedMeasure.append(gChord)
-				mixedMeasure.append(fChord)
-				/* for (var z = 0; z < 4; z++) {
-					for (var i = 0; i<chordArray.length; i++){
-						mixedMeasure.append(chordArray[i]);
-					}
-				} */
-				mixedMeasure.renderOptions.events['click'] = clickFunction.bind(mixedMeasure); 
-				var $canvasDivScore = $('#canvasDivScore');
-				mixedMeasure.appendNewCanvas($canvasDivScore);
-				
-				 var playSound = false;
-		                        
-			     $('#playSound').bind('click', function() {
-		                if (this.checked) {
-		                    music21.jazzMidi.callBacks.general = midiCallbacksPlay;
-		                } else {
-		                    music21.jazzMidi.callBacks.general = midiCallbacksNoPlay;
-		                }
-		         });
-			     
+				setupDemonstration();
+				var playSound = false;
+
 		      });
 			
 		</script>
