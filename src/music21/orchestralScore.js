@@ -87,16 +87,7 @@ define(['./prebase', 'jquery'],
 	 */
 
 	orchestralScore.OrchestralScore.prototype.makeSplittedPart = function (instrumentStr, p) {
-		for (var i = 0; i < this.maxPartLength; i++) {
-			var r = new music21.note.Rest();
-            if ( typeof(this.pianoMeasure) == "undefined"){
-                console.log("no piano measure in OS")
-                this.pianoMeasure = orchestralScore.OrchestralScore.pianoMeasure;
-            }
-			var correspondingPianoNote = this.pianoMeasure.flat.elements[i];
-			r.duration.quarterLength = correspondingPianoNote.duration.quarterLength;
-			p.get(0).append(r);
-		}
+		
         music21.miditools.loadSoundfont(instrumentStr, function(i) { 
             p.instrument = i;            
         });            
@@ -169,7 +160,20 @@ define(['./prebase', 'jquery'],
 		$("#canvases").append($canvasDiv);
 		$canvasDiv.html("<b>" + "Score" + "</b>");
 		this.score.appendNewCanvas($canvasDiv);
+
+                var selectedInstruments = [];
+                $('input:checkbox:not(:checked)').each(function() {
+
+                        
+                        //var labelToRemoveName = $(this).val();
+                        //$("label[for=labelToRemoveName]").remove();
+                        $(this).next().remove();
+                        $(this).next().remove();
+                        $(this).remove();
+                });
+
                 $('#createCanvases').detach();
+
 
 	};
 	/**
@@ -275,7 +279,8 @@ define(['./prebase', 'jquery'],
 	 */
 	orchestralScore.OrchestralScore.prototype.assignNoteToParts = function(c,  noteIndex) {
                 console.log("assign note to parts"); 
-		var selectedInstruments = this.getSelectedInstruments();
+		var selectedInstruments = this.
+Instruments();
 		for (var i = 0; i < selectedInstruments.length; i++) {
 			var instrument = selectedInstruments[i];
 			var partNumberToAppendTo = this.getPartIndex(instrument);
