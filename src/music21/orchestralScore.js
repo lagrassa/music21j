@@ -87,6 +87,25 @@ define(['./prebase', 'jquery'],
 	 */
 
 	orchestralScore.OrchestralScore.prototype.makeSplittedPart = function (instrumentStr, p) {
+
+     for (var notePlace = 0; notePlace < this.pianoMeasure.elements.length; notePlace++) {
+			var r = new music21.note.Rest();				
+			var correspondingPianoNote = this.pianoMeasure.elements[notePlace];
+			r.duration.quarterLength = correspondingPianoNote.duration.quarterLength;
+			p.get(0).elements[notePlace] = r;
+			console.log("fills in missing rests");
+			
+			//if (typeof(p.get(0).elements[notePlace]) == "undefined") {
+			//	var r = new music21.note.Rest();
+			//	if (typeof(orchestralScore.OrchestralScore) == "undefined") {
+			//		console.log("No orchestral score was created yet");
+			//		return;
+			//	}
+			//	var correspondingPianoNote = this.pianoMeasure.elements[notePlace];
+			//	r.duration.quarterLength = correspondingPianoNote.duration.quarterLength;
+			//	p.get(0).elements[notePlace] = r;
+			//}
+	}
 		
         music21.miditools.loadSoundfont(instrumentStr, function(i) { 
             p.instrument = i;            
@@ -210,25 +229,7 @@ define(['./prebase', 'jquery'],
                        console.log(this);
         }
         var p = this.parts[partIndex];
-        for (var notePlace = 0; notePlace < noteIndex; notePlace++) {
-			if (!this.checkIfFilledToNotePlace(p, notePlace)) {
-				var r = new music21.note.Rest();				
-				var correspondingPianoNote = this.pianoMeasure.elements[notePlace];
-				r.duration.quarterLength = correspondingPianoNote.duration.quarterLength;
-				this.parts[partIndex].get(0).elements[notePlace] = r;
-				console.log("fills in missing rests");
-			}
-			if (typeof(p.get(0).elements[notePlace]) == "undefined") {
-				var r = new music21.note.Rest();
-				if (typeof(orchestralScore.OrchestralScore) == "undefined") {
-					console.log("No orchestral score was created yet");
-					return;
-				}
-				var correspondingPianoNote = this.pianoMeasure.elements[notePlace];
-				r.duration.quarterLength = correspondingPianoNote.duration.quarterLength;
-				p.get(0).elements[notePlace] = r;
-			}
-		}
+   
 		p.get(0).elements[noteIndex] = c;
 		if (p.get(0).elements.length > this.maxPartLength) {
 			this.maxPartLength = p.get(0).elements.length;
@@ -279,8 +280,7 @@ define(['./prebase', 'jquery'],
 	 */
 	orchestralScore.OrchestralScore.prototype.assignNoteToParts = function(c,  noteIndex) {
                 console.log("assign note to parts"); 
-		var selectedInstruments = this.
-Instruments();
+		var selectedInstruments = this.getSelectedInstruments();
 		for (var i = 0; i < selectedInstruments.length; i++) {
 			var instrument = selectedInstruments[i];
 			var partNumberToAppendTo = this.getPartIndex(instrument);
